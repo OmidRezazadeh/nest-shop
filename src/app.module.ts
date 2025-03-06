@@ -8,6 +8,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { User } from './user/entities/user.entity';
 import { Role } from './role/entities/role.entity';
+import { ProfileModule } from './profile/profile.module';
+import { Profile } from './profile/entities/profile';
 
 dotenv.config();
 @Module({
@@ -21,12 +23,13 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role], // Change if using compiled JS
+      entities: [User,Role,Profile], // Change if using compiled JS
       synchronize: true,
     }),
     UserModule, 
     RoleModule,
-    AuthModule
+    AuthModule,
+    ProfileModule
     
     ],
   controllers: [AppController],
