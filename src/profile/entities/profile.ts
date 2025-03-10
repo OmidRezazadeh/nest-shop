@@ -13,8 +13,10 @@ export class Profile{
     @Column({ nullable: true })
     image:string;
 
+    @Column({name:'user_id'})
+    user_id:number;
     @OneToOne(()=>User)
-    @JoinColumn()
+    @JoinColumn({ name:'user_id'})
     user:User;
     
 
