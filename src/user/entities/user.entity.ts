@@ -1,7 +1,10 @@
 import { profile } from "console";
+import { USER_STATUS } from "src/common/constants/user-status";
 import { Profile } from "src/profile/entities/profile";
 import { Role } from "src/role/entities/role.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+
+
 
 @Entity('users')
 export class User{
@@ -14,8 +17,8 @@ export class User{
   @Column()
   password: string;
 
-  @Column()
-  status:string;
+  @Column({ default: USER_STATUS.INACTIVE }) // Default status is 0
+  status: number;
   
   @Column()
   phone:string;

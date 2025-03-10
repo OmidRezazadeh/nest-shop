@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../user/entities/user.entity';
 import { RegisterDto } from './dto/registerDto'; // Adjust the path if necessary
+import { USER_STATUS } from 'src/common/constants/user-status';
 @Injectable()
 export class AuthService {
     constructor(
@@ -12,14 +13,13 @@ export class AuthService {
       ) {}
 
       async createUser(registerDto: RegisterDto): Promise<User> {
-        // Hash the password using bcrypt
-        const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    
-        // Create the user instance with hashed password and other details from DTO
+        const hashedPassword = await bcrypt.hash(registerDto.password, 10);    
         const user = this.userRepository.create({
           ...registerDto,
-          password: hashedPassword, // Set hashed password
+          password: hashedPassword, 
+          status: USER_STATUS.INACTIVE, // Set default status
         });
-        return user; 
+        return this.userRepository.save(user);
+
       }
 }
