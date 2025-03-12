@@ -29,7 +29,6 @@ export class AuthController {
       const role = await queryRunner.manager.findOne(Role, { where: { id: user.role_id } });
 
       await queryRunner.commitTransaction();
-      // Map the user and include full role model in the response
       const userResponse = plainToInstance(User, {
         ...user,
         profile: profile,
@@ -38,14 +37,14 @@ export class AuthController {
       });
   
       return {
-        message: 'User registered successfully',
+        message: 'ثبت نام کاربر با موفقیت انجام شد',
         user: userResponse,
       };
     } catch (error) {
       console.log(error);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(
-        'Transaction failed, changes rolled back.',
+        'لطفا مجددا امتحان کنید',
       );
     } finally {
       await queryRunner.release();

@@ -16,7 +16,9 @@ export class RegisterDto {
     @IsNotEmpty({ message: 'تأیید رمز عبور نمی‌تواند خالی باشد' })
     @Match('password', { message: 'رمز عبور و تأیید آن باید یکسان باشند' })
     confirmPassword: string;
+
     @IsNotEmpty({ message: 'شماره تلفن نمی‌تواند خالی باشد' })
     @IsPhoneNumber({ message: 'شماره تلفن وارد شده معتبر نیست' })
+    @IsUnique({tableName:'users',column: 'phone'})
     phone: string;
 }
