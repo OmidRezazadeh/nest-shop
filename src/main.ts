@@ -1,17 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable validation globally
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // Strip unknown properties
-      forbidNonWhitelisted: true, // Throw error for unknown properties
-    }),
-  );
+  app.useGlobalPipes(new ValidationPipe());
+  useContainer(app.select(AppModule),{fallbackOnErrors:true});
+
 
 
   app.setGlobalPrefix('/api/v1');

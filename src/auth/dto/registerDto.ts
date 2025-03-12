@@ -1,11 +1,12 @@
-import { IsEmail, IsNotEmpty, MinLength,  } from "class-validator";
+import { IsEmail, IsNotEmpty, MinLength, Validate,  } from "class-validator";
+import { IsUnique } from "src/common/decorators/is-unique";
 import { Match } from "src/common/decorators/match.decorator";
 import { IsPhoneNumber } from "src/common/decorators/PhoneNumberConstraint.decorator";
-
 
 export class RegisterDto {
     @IsNotEmpty({ message: 'ایمیل نمی‌تواند خالی باشد' })
     @IsEmail({}, { message: 'ایمیل وارد شده صحیح نیست ' })
+    @IsUnique({tableName: 'users', column:"email" })
     email:string;
 
     @IsNotEmpty({ message: 'رمز عبور نمی‌تواند خالی باشد' })

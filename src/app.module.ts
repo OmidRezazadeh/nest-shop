@@ -10,6 +10,7 @@ import { User } from './user/entities/user.entity';
 import { Role } from './role/entities/role.entity';
 import { ProfileModule } from './profile/profile.module';
 import { Profile } from './profile/entities/profile';
+import { IsUniqueConstraint } from './common/decorators/is-unique-constraint';
 
 dotenv.config();
 @Module({
@@ -33,6 +34,6 @@ dotenv.config();
     
     ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,IsUniqueConstraint],
 })
 export class AppModule {}

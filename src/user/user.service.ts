@@ -11,5 +11,11 @@ constructor(
     private userRepository:Repository<User>
 ){}
 
+async findByEmail(email:string) {
+    console.log("here")
+   const  user = await this.userRepository.findOne({where:{email: email}})
+   return user;
+}
+
 
 }
