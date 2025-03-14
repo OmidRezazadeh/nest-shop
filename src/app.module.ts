@@ -11,6 +11,9 @@ import { Role } from './role/entities/role.entity';
 import { ProfileModule } from './profile/profile.module';
 import { Profile } from './profile/entities/profile';
 import { IsUniqueConstraint } from './common/decorators/is-unique-constraint';
+import { ConfirmationCodeModule } from './confirmation-code/confirmation-code.module';
+import { confirmationCode } from './confirmation-code/entities/confirmationCode';
+import { EmailModule } from './email/email.module';
 
 dotenv.config();
 @Module({
@@ -24,14 +27,16 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile], // Change if using compiled JS
+      entities: [User,Role,Profile,confirmationCode], // Change if using compiled JS
       synchronize: true,
     }),
     UserModule, 
     RoleModule,
     AuthModule,
-    ProfileModule
-    
+    ProfileModule,
+    ConfirmationCodeModule,
+    EmailModule,
+  
     ],
   controllers: [AppController],
   providers: [AppService,IsUniqueConstraint],
