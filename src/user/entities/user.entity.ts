@@ -22,6 +22,7 @@ export class User{
   
   @Column()
   phone:string;
+
   @Column({ name: 'role_id' }) // Explicitly store the foreign key
   role_id: number;
 
@@ -30,7 +31,6 @@ export class User{
   role: Role;
   
   @OneToOne(()=> Profile,(profile)=>profile.user)
-  @JoinColumn()
   profile:Profile; 
 
   @CreateDateColumn()

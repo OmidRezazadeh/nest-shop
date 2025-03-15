@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ProfileService } from '../profile/profile.service';
 import { RegisterDto } from './dto/registerDto';
+import { ConfirmDto } from './dto/confirmDto';
 import { DataSource, QueryRunner } from 'typeorm';
 import { InternalServerErrorException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -10,6 +11,7 @@ import { Role } from 'src/role/entities/role.entity';
 import { ConfirmationCodeService } from '../confirmation-code/confirmation-code.service';
 import { randomInt } from 'crypto';
 import { MailService } from '../email/email.service';
+import { UserService } from '../user/user.service';
 
 
 @Controller('auth')
@@ -18,8 +20,9 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly profileService: ProfileService,
     private readonly dataSource: DataSource,
-    private readonly ConfirmationCodeService:ConfirmationCodeService,
-    private readonly  mailService:MailService
+    private readonly confirmationCodeService:ConfirmationCodeService,
+    private readonly  mailService:MailService,
+    private readonly userService: UserService,
   ) {}
 
   @Post('register')
@@ -37,8 +40,9 @@ export class AuthController {
      const confirmationCode = randomInt(100000, 999999);
 
      const email= user.email
-     await this.ConfirmationCodeService.create(email,confirmationCode)
+     await this.confirmationCodeService.create(email,confirmationCode)
     await this.mailService.sendConfirmationEmail(email,confirmationCode)
+    
     
      await queryRunner.commitTransaction();
       const userResponse = plainToInstance(User, {
@@ -61,6 +65,13 @@ export class AuthController {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  @Post('confirm-email')
+  async confirmEmail(@Body() ConfirmDto:ConfirmDto ){
+        await this.confirmationCodeService.confirmEmail(ConfirmDto);
+      
+
   }
 
  

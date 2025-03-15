@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/registerDto'; // Adjust the path if necessary
 import { USER_STATUS } from 'src/common/constants/user-status';
 import { Role } from '../role/entities/role.entity';
 import { ROLE_NAME } from 'src/common/constants/role-name';
+import { ConfirmDto } from './dto/confirmDto';
 @Injectable()
 export class AuthService {
     constructor(
@@ -25,5 +26,9 @@ export class AuthService {
         });
         return this.userRepository.save(user);
 
+      }
+
+      async ConfirmEmail(confirmDto:ConfirmDto){
+          
       }
 }
