@@ -12,6 +12,7 @@ import { ConfirmationCodeService } from '../confirmation-code/confirmation-code.
 import { randomInt } from 'crypto';
 import { MailService } from '../email/email.service';
 import { UserService } from '../user/user.service';
+import { LoginDto } from './dto/login.dto';
 
 
 @Controller('auth')
@@ -67,11 +68,17 @@ export class AuthController {
     }
   }
 
+
   @Post('confirm-email')
   async confirmEmail(@Body() ConfirmDto:ConfirmDto ){
         await this.confirmationCodeService.confirmEmail(ConfirmDto);
       
 
+  }
+
+  @Post('login')
+  async login(@Body() loginDto:LoginDto){
+    return this.authService.login(loginDto)
   }
 
  

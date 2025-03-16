@@ -7,17 +7,30 @@ import { ProfileModule } from 'src/profile/profile.module';
 import { UserModule } from 'src/user/user.module';
 import { ConfirmationCodeModule } from 'src/confirmation-code/confirmation-code.module';
 import { EmailModule } from 'src/email/email.module';
+import { UserService } from 'src/user/user.service';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
+    PassportModule,
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: process.env.JWT_SECRET,
+        signOptions: { expiresIn: process.env.JWT_EXPIRES_IN 
+
+        },
+    }),
+  }),
     ProfileModule,
     ConfirmationCodeModule,
     EmailModule,
     forwardRef(() => UserModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService], // Do NOT add ConfirmationCodeService here
+  providers: [AuthService, UserService],
   exports: [AuthService],
 })
 export class AuthModule {}
