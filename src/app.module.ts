@@ -14,12 +14,15 @@ import { IsUniqueConstraint } from './common/decorators/is-unique-constraint';
 import { ConfirmationCodeModule } from './confirmation-code/confirmation-code.module';
 import { confirmationCode } from './confirmation-code/entities/confirmationCode';
 import { EmailModule } from './email/email.module';
+import { ConfigModule } from '@nestjs/config';
 
 dotenv.config();
 @Module({
 
 
   imports: [
+
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
