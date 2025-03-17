@@ -23,7 +23,10 @@ export class User{
   @Column()
   phone:string;
 
-  @Column({ name: 'role_id' }) // Explicitly store the foreign key
+  @Column({ nullable: true })  // This allows null values in the database
+    refreshToken: string ;
+
+  @Column({ name: 'role_id' })
   role_id: number;
 
   @ManyToOne(() => Role, (role) => role.users, { eager: true })

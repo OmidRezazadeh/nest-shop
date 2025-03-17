@@ -52,10 +52,23 @@ export class AuthService {
       async login(loginDto: any){
           const user = await this.validateUser(loginDto.email, loginDto.password);
           const payload={email:user.email, id:user.id}
+          const accessToken =this.jwtService.sign(payload,{expiresIn:'1h'})
+          const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+          const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+          await this.userRepository.update(user.id, { refreshToken: hashedRefreshToken });
           return {
-            access_token: this.jwtService.sign(payload),
-          };
+            access_token: accessToken,
+            refresh_token:  refreshToken
+          } 
+          
+          
        }
+
+
+      async logout(userId:number){
+        await this.userRepository.update(userId, { refreshToken: null as any });
+      }
  
 
 }

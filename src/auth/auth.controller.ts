@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ProfileService } from '../profile/profile.service';
 import { RegisterDto } from './dto/registerDto';
@@ -13,6 +13,7 @@ import { randomInt } from 'crypto';
 import { MailService } from '../email/email.service';
 import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 
 
 @Controller('auth')
@@ -79,6 +80,18 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto:LoginDto){
     return this.authService.login(loginDto)
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Req() req) {
+    
+    await this.authService.logout(req.user.id);
+    return {
+      message: '  خروج کاربر با موفقیت انجام شد',
+      
+    };
+
+
   }
 
  
