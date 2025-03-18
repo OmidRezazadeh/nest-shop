@@ -93,6 +93,12 @@ export class AuthController {
 
 
   }
+  @Post('refreshToken')
+  async refreshToken(@Body() body: {userId:number, refreshToken: string}){
+    return this.authService.refreshToken(body.userId, body.refreshToken);
+
+  }
+  
 
  
 }

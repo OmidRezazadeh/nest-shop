@@ -69,6 +69,40 @@ export class AuthService {
       async logout(userId:number){
         await this.userRepository.update(userId, { refreshToken: null as any });
       }
+      async refreshToken(userId: number, refreshToken: string) {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+      
+        if (!user) {
+          throw new UnauthorizedException('کاربری یافت نشد');
+        }
+      
+        // Check if the refresh token matches the stored token
+        if (user.refreshToken !== refreshToken) {
+          throw new UnauthorizedException('توکن وارد شد نامعتبر است');
+        }
+      
+        try {
+          // Verify if the refresh token is still valid
+          this.jwtService.verify(refreshToken);
+        } catch (error) {
+          throw new UnauthorizedException('نشانه Refresh منقضی شده است. لطفا دوباره وارد شوید');
+        }
+      
+        // Generate new tokens
+        const payload = { email: user.email, id: user.id };
+        const newAccessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
+        const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+      
+        // Update refresh token in database
+        user.refreshToken = newRefreshToken;
+        await this.userRepository.save(user);
+      
+        return {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        };
+      }
+      
  
 
 }
