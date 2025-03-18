@@ -10,28 +10,28 @@ import { EmailModule } from 'src/email/email.module';
 import { UserService } from 'src/user/user.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { confirmationCode } from 'src/confirmation-code/entities/confirmationCode';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User,confirmationCode]),
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: process.env.JWT_SECRET,
         signOptions: { expiresIn: process.env.JWT_EXPIRES_IN 
-
         },
     }),
   }),
+
     ProfileModule,
     ConfirmationCodeModule,
     EmailModule,
     forwardRef(() => UserModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService,JwtStrategy],
+  providers: [AuthService,UserService,JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

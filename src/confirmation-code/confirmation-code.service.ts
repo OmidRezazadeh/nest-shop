@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConfirmDto } from 'src/auth/dto/confirmDto';
 import {  CustomHttpException, NotFoundException } from 'src/common/constants/custom-http.exceptions';
 import { User } from 'src/user/entities/user.entity';
-import { STATUS_CODES } from 'http';
+
 import { USER_STATUS } from 'src/common/constants/user-status';
 
 @Injectable()
@@ -33,7 +33,7 @@ async confirmEmail(confirmDto: ConfirmDto) {
       });
   
       if (!confirmation) {
-        throw new BadRequestException('Invalid confirmation code');
+        throw new BadRequestException('کد وارد شده صحیح نیست ');
       }
   
       // Check expiration time (2 minutes)
@@ -43,14 +43,14 @@ async confirmEmail(confirmDto: ConfirmDto) {
         (currentTime.getTime() - createdAt.getTime()) / (1000 * 60);
   
       if (differenceInMinutes > 2) {
-        throw new BadRequestException('Confirmation code has expired');
+        throw new BadRequestException(' این کد منقضی شده ');
       }
   
       // Update user status inside the same transaction
       await queryRunner.manager.update(User, { email }, { status:USER_STATUS.ACTIVE });
   
       await queryRunner.commitTransaction();
-      return { message: 'User successfully verified' };
+      return { message: ' کاربر وریفای شد' };
   
     } catch (error) {
       await queryRunner.rollbackTransaction();

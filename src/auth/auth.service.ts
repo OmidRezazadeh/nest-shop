@@ -1,25 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../user/entities/user.entity';
 import { RegisterDto } from './dto/registerDto'; // Adjust the path if necessary
 import { USER_STATUS } from 'src/common/constants/user-status';
-import { Role } from '../role/entities/role.entity';
 import { ROLE_NAME } from 'src/common/constants/role-name';
-import { ConfirmDto } from './dto/confirmDto';
-import { Validate } from 'class-validator';
-import { LoginDto } from './dto/login.dto';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException } from 'src/common/constants/custom-http.exceptions';
+import { NotFoundException, UnauthorizedException } from 'src/common/constants/custom-http.exceptions';
+import { confirmationCode } from '../confirmation-code/entities/confirmationCode';
 @Injectable()
 export class AuthService {
     constructor(
+
+      @InjectRepository(confirmationCode)
+      private readonly confirmationCodeRepository:Repository<confirmationCode>,
+      
       @InjectRepository(User)
       private readonly userRepository: Repository<User>,
       private readonly  userService:UserService,
       private readonly jwtService: JwtService,
+
       ) {}
 
       async createUser(registerDto: RegisterDto): Promise<User> {
@@ -38,7 +40,7 @@ export class AuthService {
       async validateUser(email:string, password:string){
         const user =await this.userService.findByEmail(email);
         if(!user){
-           throw new UnauthorizedException('شما مجاز به دسترسی به این منبع نیستید');
+           throw new UnauthorizedException(' ایمیل وارد شده صحیح نیست ');
 
         }
         
@@ -102,7 +104,44 @@ export class AuthService {
           refreshToken: newRefreshToken,
         };
       }
-      
- 
 
+     async validateEmail(email:string){
+      const user =await this.userService.findByEmail(email);
+      if(!user){
+         throw new UnauthorizedException(' ایمیل وارد شده صحیح نیست ');
+      }
+
+
+
+      }
+
+     async validateSavePassword(savePasswordDto: any){
+          await this.validateEmail(savePasswordDto.email)
+          
+          const confirmationCode = await this.confirmationCodeRepository.findOne(
+            {where:{ email:savePasswordDto.email, code:savePasswordDto.code}
+          });
+          if (!confirmationCode) {
+             throw new NotFoundException(" کد وارد شده صحیح نیست")
+          
+            }
+
+            const currentTime = new Date();
+            const createdAt = new Date(confirmationCode.createdAt);
+            const differenceInMinutes =
+              (currentTime.getTime() - createdAt.getTime()) / (1000 * 60);
+        
+            if (differenceInMinutes > 2) {
+              throw new BadRequestException(' این کد منقضی شده ');
+            }
+
+
+
+      }
+      
+    async updatePassword(email: string,password:string){
+      const hashedPassword = await bcrypt.hash(password, 10);  
+      await this.userRepository.update({ email }, { password: hashedPassword });
+ 
+    }      
 }

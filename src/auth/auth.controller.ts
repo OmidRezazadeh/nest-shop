@@ -11,9 +11,12 @@ import { Role } from 'src/role/entities/role.entity';
 import { ConfirmationCodeService } from '../confirmation-code/confirmation-code.service';
 import { randomInt } from 'crypto';
 import { MailService } from '../email/email.service';
-import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
+import { ForgotPasswordDto } from './dto/forgotPasswordDto';
+import { UserService } from '../user/user.service';
+import { SavePasswordDto } from './dto/savePasswordDto';
+
 
 
 @Controller('auth')
@@ -24,7 +27,8 @@ export class AuthController {
     private readonly dataSource: DataSource,
     private readonly confirmationCodeService:ConfirmationCodeService,
     private readonly  mailService:MailService,
-    private readonly userService: UserService,
+    private readonly userService:UserService
+
   ) {}
 
   @Post('register')
@@ -97,6 +101,29 @@ export class AuthController {
   async refreshToken(@Body() body: {userId:number, refreshToken: string}){
     return this.authService.refreshToken(body.userId, body.refreshToken);
 
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto:ForgotPasswordDto){
+   await this.authService.validateEmail(forgotPasswordDto.email)
+  
+   const confirmationCode = randomInt(100000, 999999);
+   await this.confirmationCodeService.create(forgotPasswordDto.email, confirmationCode)
+   await this.mailService.sendCodeEmail(forgotPasswordDto.email,confirmationCode)
+    return{
+      message: 'ایمیلی  برای شما ',
+    }
+
+  }
+
+  @Post('save-password')
+  async savePassword(@Body() savePasswordDto:SavePasswordDto){
+      await this.authService.validateSavePassword(savePasswordDto)
+      await this.authService.updatePassword(savePasswordDto.email,savePasswordDto.new_password);
+      return {
+        message:"رمز عبور شما بروز رسانی شد"
+      }
+    
   }
   
 

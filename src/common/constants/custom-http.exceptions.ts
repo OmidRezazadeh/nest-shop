@@ -22,8 +22,6 @@ export class RequestTimeoutException extends CustomHttpException {
         super(message, HttpStatus.REQUEST_TIMEOUT);
     }  
 
-    
-
 }
 
 
@@ -32,3 +30,12 @@ export class  UnauthorizedException extends CustomHttpException {
         super(message,HttpStatus.UNAUTHORIZED)
     }
 }
+
+
+
+export class BadRequestException extends CustomHttpException {
+        
+    constructor(message: string) {
+        super(message, HttpStatus.FORBIDDEN);
+    }    
+    }
