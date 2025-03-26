@@ -15,6 +15,8 @@ import { ConfirmationCodeModule } from './confirmation-code/confirmation-code.mo
 import { confirmationCode } from './confirmation-code/entities/confirmationCode';
 import { EmailModule } from './email/email.module';
 import { ConfigModule } from '@nestjs/config';
+import { UploadModule } from './upload/upload.module';
+import { Photo } from './upload/entities/photo.entity';
 
 dotenv.config();
 @Module({
@@ -30,7 +32,7 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile,confirmationCode], // Change if using compiled JS
+      entities: [User,Role,Profile,confirmationCode,Photo], // Change if using compiled JS
       synchronize: true,
     }),
     UserModule, 
@@ -39,6 +41,7 @@ dotenv.config();
     ProfileModule,
     ConfirmationCodeModule,
     EmailModule,
+    UploadModule,
   
     ],
   controllers: [AppController],
