@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Photo } from './entities/photo.entity';
 import { Repository } from 'typeorm';
 import * as fs from 'fs';
+import * as path from 'path';
 import * as sharp from 'sharp';
 
 
@@ -14,40 +15,15 @@ export class UploadService {
         private readonly photoRepository: Repository<Photo>
     ){}
 
-    async saveFile(file: Express.Multer.File, imageableId:number, imageableType:string ){
-        const uploadDir = 'uploads/temps';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir,{recursive:true})
-        }
-        const resizeFilename = `${Date.now()}-${file.originalname}`;
-        const resizePath=`${uploadDir}${resizeFilename}`;
-        
-        try {
-            await sharp(file.buffer)
-                .resize(500, 500)
-                .toFormat('jpeg')
-                .jpeg({ quality: 80 })
-                .toFile(resizePath);
-        } catch (error) {
-            console.error('Error processing image:', error);
-            throw new Error('Image processing failed');
-        }
-
-        const photo  = await this.photoRepository.create({
-      filename: resizeFilename,
-      path: resizePath,
-      imageable_id: imageableId,
-      imageable_type: imageableType,
-        })
-        // try {
-        //     const savedPhoto = await this.photoRepository.save(photo);
-        //     console.log('Saved photo:', savedPhoto);
-        //     return savedPhoto;
-        // } catch (error) {
-        //     console.error('Error saving photo:', error);
-        //     throw error;
-        // }
-        
+    async saveFile(file: Express.Multer.File ){
+        const fileName = `compressed-${Date.now()}.jpg`;
+        const filePath=path.join(__dirname, '../../'+ process.env.UPLOAD_DIR,fileName);
+         await sharp(file.buffer)
+         .resize({width: Number(process.env.IMAGE_WIDTH) })
+         .jpeg({ quality: Number(process.env.IMAGE_QUALITY) })
+         .toFile(filePath);
+         
+         return fileName;
 
     }
 }
