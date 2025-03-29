@@ -15,7 +15,7 @@ export class UploadService {
     ){}
 
     async saveFile(file: Express.Multer.File, imageableId:number, imageableType:string ){
-        const uploadDir = 'uploads/';
+        const uploadDir = 'uploads/temps';
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir,{recursive:true})
         }
@@ -39,14 +39,14 @@ export class UploadService {
       imageable_id: imageableId,
       imageable_type: imageableType,
         })
-        try {
-            const savedPhoto = await this.photoRepository.save(photo);
-            console.log('Saved photo:', savedPhoto);
-            return savedPhoto;
-        } catch (error) {
-            console.error('Error saving photo:', error);
-            throw error;
-        }
+        // try {
+        //     const savedPhoto = await this.photoRepository.save(photo);
+        //     console.log('Saved photo:', savedPhoto);
+        //     return savedPhoto;
+        // } catch (error) {
+        //     console.error('Error saving photo:', error);
+        //     throw error;
+        // }
         
 
     }
