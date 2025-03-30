@@ -12,13 +12,13 @@ export class NotFoundException extends CustomHttpException {
     }    
 }   
 export class ForbiddenException extends CustomHttpException {
-    constructor(message: "Forbidden") {
+    constructor(message: string) {
         super(message, HttpStatus.FORBIDDEN);
     }    
 }   
 
 export class RequestTimeoutException extends CustomHttpException {
-    constructor(message: "Request timeout") {
+    constructor(message:string) {
         super(message, HttpStatus.REQUEST_TIMEOUT);
     }  
 

@@ -1,4 +1,4 @@
-import { Controller, NotFoundException, Put, Req, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Put, Req, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ProfileDto } from './dto/profile.dto';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
@@ -7,9 +7,9 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfileService } from './profile.service';
 import { Photo } from 'src/upload/entities/photo.entity';
-import * as fs from 'fs';
-import { UploadService } from '../upload/upload.service';
 
+import { UploadService } from '../upload/upload.service';
+import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
 @Controller('profile')
 export class ProfileController {
     constructor(
@@ -20,35 +20,22 @@ export class ProfileController {
         private readonly profileService:ProfileService,
         
     ){}
+    
     @Put('update')
     @UseInterceptors(FileInterceptor('file'))
     @UseGuards(JwtAuthGuard)
-    async update(@Request() request, @UploadedFile() file?: Express.Multer.File) {
+    async update(@Request() request,@Body()  profileDto:ProfileDto) {
 
       const userId = request.user.id;
-      const profile= await this.profileService.findById(userId);
-    
-      if (file) {
-        const existingPhoto = await this.photoRepository.findOne({
-          where: { imageable_id: profile.id, imageable_type: 'profile' },
-        });
-        console.log(existingPhoto);
-        // Delete old photo from storage
-      
-        if (existingPhoto) {
-          if (fs.existsSync(existingPhoto.path)) {
-              fs.unlinkSync(existingPhoto.path);
-          }
-          await this.photoRepository.remove(existingPhoto);
+      await this.profileService.update(profileDto.bio,userId);
+      if (profileDto.image) {
+          await this.profileService.moveImage(profileDto.image,userId)
       }
-      
-     
-      const photo = await this.uploadService.saveFile(file, profile.id, 'profile');
-      return {
-        "photo":photo
-  }
+
+
+    
     }
 
-}
+
 
 }

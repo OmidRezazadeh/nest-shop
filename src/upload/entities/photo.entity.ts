@@ -8,9 +8,6 @@ export class Photo {
     @Column({ type: 'varchar', length: 255, nullable: false })
     filename: string;
 
-    @Column({ type: 'varchar', length: 255, nullable: false })
-    path: string;
-
     @Column({ type: 'int', nullable: false })
     @Index()
     imageable_id: number; 

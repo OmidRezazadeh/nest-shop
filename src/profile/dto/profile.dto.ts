@@ -1,6 +1,11 @@
-import { IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 
 export class ProfileDto{
     @IsString()
-    bio:string
+    bio:string;
+
+    @IsOptional() 
+    @IsString()
+    image:string;
+     
 }

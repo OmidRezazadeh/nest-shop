@@ -26,4 +26,10 @@ export class UploadService {
          return fileName;
 
     }
+    async checkImageExists(imageName,userId){
+        const image = await this.photoRepository.findOne({
+            where: { imageable_id: userId, filename: imageName },
+          });
+          return image
+    }
 }
