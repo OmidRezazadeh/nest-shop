@@ -52,13 +52,12 @@ export class ProfileService {
     const newFilePath = path.join(userFolder, imageName);
     fs.renameSync(imagePath, newFilePath);
   
-    // ✅ Check if a photo entry already exists in the database for this user
     const existingPhoto = await this.photoRepository.findOne({
       where: { imageable_id: userId, imageable_type: 'profile' },
     });
   
     if (!existingPhoto) {
-      // ✅ Save a new photo record
+
       const newPhoto = this.photoRepository.create({
         filename: imageName,
         imageable_id: userId,
@@ -74,7 +73,7 @@ export class ProfileService {
         throw new Error('Database error while saving photo.');
       }
     } else {
-      // ✅ Delete the old image from storage if it exists
+
       const oldFilePath = path.join(userFolder, existingPhoto.filename);
       if (fs.existsSync(oldFilePath)) {
         fs.unlinkSync(oldFilePath);
@@ -94,6 +93,21 @@ export class ProfileService {
         throw new Error('Database error while updating photo.');
       }
     }
+  }
+
+ async deleteImage(userId){
+  const photo = await this.photoRepository.findOne({where:{imageable_id:userId}})
+  if (!photo) {
+    throw new NotFoundException('عکسی یافت نشد')
+  }
+  const userImage = path.join(__dirname, `../../${process.env.PROFILE_DIR}/${userId}/${photo.filename}`);
+  if (fs.existsSync(userImage)) {
+    fs.unlinkSync(userImage);
+  }
+  await this.photoRepository.delete({imageable_id:userId})
+
+
+
   }
   
 }

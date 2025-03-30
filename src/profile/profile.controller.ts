@@ -1,4 +1,4 @@
-import { Body, Controller, Put, Req, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Put, Req, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ProfileDto } from './dto/profile.dto';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
@@ -31,9 +31,24 @@ export class ProfileController {
       if (profileDto.image) {
           await this.profileService.moveImage(profileDto.image,userId)
       }
+      return {
+        message:"پروفایل با موفقیت بروز رسانی شد "
+      }
+
 
 
     
+    }
+
+    @Delete('image')
+    @UseGuards(JwtAuthGuard)
+    async delete(@Request() request){
+        const userId = request.user.id;
+        await this.profileService.deleteImage(userId)
+        return {
+            message:" عکس با موفقیت حذف شد"
+        }
+
     }
 
 
