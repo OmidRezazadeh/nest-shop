@@ -9,6 +9,6 @@ import { Photo } from './entities/photo.entity';
 
   providers: [UploadService],
   controllers: [UploadController],
-  exports:[UploadService]
+  exports:[UploadService,TypeOrmModule]
 })
 export class UploadModule {}

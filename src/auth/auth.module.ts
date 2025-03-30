@@ -12,6 +12,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { confirmationCode } from 'src/confirmation-code/entities/confirmationCode';
+import { UploadModule } from 'src/upload/upload.module';
 
 @Module({
   imports: [
@@ -29,6 +30,8 @@ import { confirmationCode } from 'src/confirmation-code/entities/confirmationCod
     ConfirmationCodeModule,
     EmailModule,
     forwardRef(() => UserModule),
+    UploadModule, 
+
   ],
   controllers: [AuthController],
   providers: [AuthService,UserService,JwtStrategy],
