@@ -66,11 +66,11 @@ export class ProfileService {
   
       try {
         const savedPhoto = await this.photoRepository.save(newPhoto);
-        console.log('Photo saved:', savedPhoto);
+
         return savedPhoto;
       } catch (error) {
-        console.error('Error saving photo:', error);
-        throw new Error('Database error while saving photo.');
+
+        throw new Error('ذخیره عکس با مشکل مواجه شد');
       }
     } else {
 

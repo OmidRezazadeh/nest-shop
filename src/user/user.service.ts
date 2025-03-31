@@ -34,12 +34,14 @@ async findByEmail(email:string) {
       });
 
       const userResponse = new UserResponseDto({
-        id: user?.id,
-        email: user?.email,
-        phone: user?.phone,
+        user:{
+          id: user?.id ?? 0, 
+          email: user?.email ?? '',
+          phone: user?.phone ?? '' 
+        },
         role: user?.role,
         profile: user?.profile ,
-        // image: photo ? `${process.env.BASE_URL}/profile/${userId}/${photo.filename}` : null
+        image: photo ? `/${process.env.PROFILE_DIR}/${userId}/${photo.filename}` : undefined
       });
     
       return plainToInstance(UserResponseDto, userResponse);
