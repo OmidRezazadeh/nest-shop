@@ -37,7 +37,8 @@ async findByEmail(email:string) {
         user:{
           id: user?.id ?? 0, 
           email: user?.email ?? '',
-          phone: user?.phone ?? '' 
+          phone: user?.phone ?? '' ,
+          
         },
         role: user?.role,
         profile: user?.profile ,

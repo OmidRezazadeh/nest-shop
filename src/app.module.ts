@@ -17,6 +17,7 @@ import { EmailModule } from './email/email.module';
 import { ConfigModule } from '@nestjs/config';
 import { UploadModule } from './upload/upload.module';
 import { Photo } from './upload/entities/photo.entity';
+import { DateService } from './date/date.service';
 
 dotenv.config();
 @Module({
@@ -45,6 +46,6 @@ dotenv.config();
   
     ],
   controllers: [AppController],
-  providers: [AppService,IsUniqueConstraint],
+  providers: [AppService,IsUniqueConstraint, DateService],
 })
 export class AppModule {}
