@@ -17,7 +17,7 @@ import { ForgotPasswordDto } from './dto/forgotPasswordDto';
 import { UserService } from '../user/user.service';
 import { SavePasswordDto } from './dto/savePasswordDto';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
-import { CustomThrottlerGuard } from '../guards/jwt-auth/throttler/custom-throttler.guard';
+import { CustomThrottlerGuard } from '../guards/throttler/custom-throttler.guard';
 
 
 
