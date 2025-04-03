@@ -48,11 +48,7 @@ async findByEmail(email:string) {
       return plainToInstance(UserResponseDto, userResponse);
 
 
-    // return{
-    //     user: user,
-    //     profile:user?.profile,
-    //     image: photo ? `${process.env.BASE_URL}/profile/${userId}/${photo.filename}` : null, 
-    //     role:user?.role
+   
 
  }
 

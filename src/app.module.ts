@@ -18,13 +18,23 @@ import { ConfigModule } from '@nestjs/config';
 import { UploadModule } from './upload/upload.module';
 import { Photo } from './upload/entities/photo.entity';
 import { DateService } from './date/date.service';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { CustomThrottlerGuard } from './guards/jwt-auth/throttler/custom-throttler.guard';
 
 dotenv.config();
 @Module({
 
 
   imports: [
-
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60,
+          limit: 3,
+        },
+      ],
+    }),
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -46,6 +56,11 @@ dotenv.config();
   
     ],
   controllers: [AppController],
-  providers: [AppService,IsUniqueConstraint, DateService],
+  providers: [
+    {
+      provide:APP_GUARD,
+      useClass:CustomThrottlerGuard
+    },
+    AppService,IsUniqueConstraint, DateService],
 })
 export class AppModule {}
