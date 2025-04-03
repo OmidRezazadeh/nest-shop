@@ -19,8 +19,6 @@ import { UploadModule } from './upload/upload.module';
 import { Photo } from './upload/entities/photo.entity';
 import { DateService } from './date/date.service';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-import { CustomThrottlerGuard } from './guards/jwt-auth/throttler/custom-throttler.guard';
 
 dotenv.config();
 @Module({
@@ -30,7 +28,8 @@ dotenv.config();
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: 60,
+          name: 'login', 
+          ttl: 60000,
           limit: 3,
         },
       ],
@@ -57,10 +56,6 @@ dotenv.config();
     ],
   controllers: [AppController],
   providers: [
-    {
-      provide:APP_GUARD,
-      useClass:CustomThrottlerGuard
-    },
     AppService,IsUniqueConstraint, DateService],
 })
 export class AppModule {}

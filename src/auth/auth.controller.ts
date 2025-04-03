@@ -16,7 +16,8 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { ForgotPasswordDto } from './dto/forgotPasswordDto';
 import { UserService } from '../user/user.service';
 import { SavePasswordDto } from './dto/savePasswordDto';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { CustomThrottlerGuard } from '../guards/jwt-auth/throttler/custom-throttler.guard';
 
 
 
@@ -82,7 +83,7 @@ export class AuthController {
 
   }
   @Post('login')
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @UseGuards(CustomThrottlerGuard) // فقط برای این متد
   async login(@Body() loginDto:LoginDto){
     return this.authService.login(loginDto)
   }
