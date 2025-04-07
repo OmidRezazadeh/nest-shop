@@ -10,6 +10,8 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { NotFoundException, UnauthorizedException } from 'src/common/constants/custom-http.exceptions';
 import { confirmationCode } from '../confirmation-code/entities/confirmationCode';
+import { CreateUserDto } from 'src/user/dto/googleUser.dto';
+import { LoginDto } from './dto/login.dto';
 @Injectable()
 export class AuthService {
     constructor(
@@ -23,6 +25,19 @@ export class AuthService {
       private readonly jwtService: JwtService,
 
       ) {}
+
+      async validateJwtUser(userId){
+        const user= await this.userService.findById(userId)
+        if (!user) throw new UnauthorizedException('کاربری یافت نشد')
+        return user;  
+      }
+      async validateGoogleUser(googleUser:CreateUserDto){
+         const user = await this.userService.findByEmail(googleUser.email)
+         if(user) return user;
+         return await this.userService.create(googleUser)
+         
+      }
+
 
       async createUser(registerDto: RegisterDto): Promise<User> {
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);  
@@ -51,21 +66,36 @@ export class AuthService {
 
     return user; 
       }
-      async login(loginDto: any){
+      async login(loginDto: LoginDto){
           const user = await this.validateUser(loginDto.email, loginDto.password);
-          const payload={email:user.email, id:user.id}
-          const accessToken =this.jwtService.sign(payload,{expiresIn:'1h'})
-          const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
-          const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+         const token= this.generateJwtToken(user)
+          const hashedRefreshToken = await bcrypt.hash((await token).refreshToken, 10);
           await this.userRepository.update(user.id, { refreshToken: hashedRefreshToken });
           return {
-            access_token: accessToken,
-            refresh_token:  refreshToken
-          } 
-          
-          
+            access_token: (await token).accessToken,
+            refresh_token:  (await token).refreshToken
+          }   
        }
+       async generateJwtToken(user){
+        const payload = { email: user.email, id: user.id };
+        const accessToken =this.jwtService.sign(payload,{expiresIn:'1h'})
+        const refreshToken = this.jwtService.sign(payload, { expiresIn:'7d'});
+        user.refreshToken = refreshToken;
+        await this.userRepository.save(user);
+        return {
+          accessToken,refreshToken
+        } 
+      }
+      async loginGoogle(user: any) {
+
+        const { accessToken, refreshToken } = await this.generateJwtToken(user);
+        return {
+          id: user.id,
+          accessToken,
+          refreshToken,
+        };
+      }
+
 
 
       async logout(userId:number){
@@ -93,7 +123,7 @@ export class AuthService {
         // Generate new tokens
         const payload = { email: user.email, id: user.id };
         const newAccessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-        const newRefreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+        const newRefreshToken = this.jwtService.sign(payload, { expiresIn:'7d'});
       
         // Update refresh token in database
         user.refreshToken = newRefreshToken;
@@ -110,9 +140,6 @@ export class AuthService {
       if(!user){
          throw new UnauthorizedException(' ایمیل وارد شده صحیح نیست ');
       }
-
-
-
       }
 
      async validateSavePassword(savePasswordDto: any){

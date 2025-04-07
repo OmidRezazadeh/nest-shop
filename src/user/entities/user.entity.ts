@@ -8,23 +8,29 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, Prim
 
 @Entity('users')
 export class User{
-    @PrimaryGeneratedColumn()
-    id:number;
+  @PrimaryGeneratedColumn()
+  id:number;
 
   @Column({unique:true})
   email:string
 
+  @Column({ nullable: true })
+  first_name: string;
+
+  @Column({ nullable: true })
+  last_name:string;
+
   @Column()
   password: string;
 
-  @Column({ default: USER_STATUS.INACTIVE }) // Default status is 0
+  @Column({ default: USER_STATUS.INACTIVE })
   status: number;
   
-  @Column()
+  @Column({ nullable: true })
   phone:string;
 
-  @Column({ nullable: true })  // This allows null values in the database
-    refreshToken: string ;
+  @Column({ nullable: true }) 
+  refreshToken: string ;
 
   @Column({ name: 'role_id' })
   role_id: number;

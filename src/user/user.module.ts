@@ -7,9 +7,10 @@ import { AuthModule } from 'src/auth/auth.module'; // Import AuthModule
 import { Photo } from 'src/upload/entities/photo.entity';
 import { UploadModule } from 'src/upload/upload.module';
 import { JwtModule } from '@nestjs/jwt';
+import { Profile } from 'src/profile/entities/profile';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User,Photo]), 
+  imports: [TypeOrmModule.forFeature([User,Photo,Profile]), 
   forwardRef(() => AuthModule),
   JwtModule.registerAsync({
     useFactory: () => ({

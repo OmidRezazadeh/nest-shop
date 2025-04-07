@@ -1,4 +1,4 @@
-import {Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ProfileService } from '../profile/profile.service';
 import { RegisterDto } from './dto/registerDto';
@@ -18,6 +18,8 @@ import { UserService } from '../user/user.service';
 import { SavePasswordDto } from './dto/savePasswordDto';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CustomThrottlerGuard } from '../guards/throttler/custom-throttler.guard';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { Public } from 'src/common/decorators/public.decorator';
 
 
 
@@ -32,6 +34,27 @@ export class AuthController {
     private readonly userService:UserService
 
   ) {}
+
+
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  googleLogin(){
+
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(@Req() req,) {
+   const user= req.user;
+ const response = await this.authService.loginGoogle(user)
+  return{
+    response
+  }
+  
+}
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {

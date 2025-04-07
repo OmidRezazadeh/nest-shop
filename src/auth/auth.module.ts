@@ -13,10 +13,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { confirmationCode } from 'src/confirmation-code/entities/confirmationCode';
 import { UploadModule } from 'src/upload/upload.module';
+import { ConfigModule } from '@nestjs/config';
+import googleOauthConfig from 'src/config/google-oauth.config';
+import { GoogleStrategy } from 'src/strategies/google.strategy';
+import { Profile } from 'src/profile/entities/profile';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User,confirmationCode]),
+
+    TypeOrmModule.forFeature([User,confirmationCode,Profile]),
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({
@@ -31,10 +36,16 @@ import { UploadModule } from 'src/upload/upload.module';
     EmailModule,
     forwardRef(() => UserModule),
     UploadModule, 
-
+    ConfigModule.forFeature(googleOauthConfig),
   ],
   controllers: [AuthController],
-  providers: [AuthService,UserService,JwtStrategy],
+  providers: [
+    
+    AuthService,
+    UserService,
+    JwtStrategy,
+    GoogleStrategy
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}
