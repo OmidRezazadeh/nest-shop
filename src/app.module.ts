@@ -19,6 +19,8 @@ import { UploadModule } from './upload/upload.module';
 import { Photo } from './upload/entities/photo.entity';
 import { DateService } from './date/date.service';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { TagModule } from './tag/tag.module';
+import { Tag } from './tag/entities/tag.entity';
 
 dotenv.config();
 @Module({
@@ -42,7 +44,7 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile,confirmationCode,Photo], // Change if using compiled JS
+      entities: [User,Role,Profile,confirmationCode,Photo,Tag], 
       synchronize: true,
     }),
     UserModule, 
@@ -52,6 +54,7 @@ dotenv.config();
     ConfirmationCodeModule,
     EmailModule,
     UploadModule,
+    TagModule,
   
     ],
   controllers: [AppController],

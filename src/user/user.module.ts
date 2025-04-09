@@ -24,6 +24,6 @@ import { Profile } from 'src/profile/entities/profile';
 ], 
   controllers: [UserController],
   providers: [UserService],
-  exports: [UserService],
+  exports: [UserService,TypeOrmModule],
 })
 export class UserModule {}

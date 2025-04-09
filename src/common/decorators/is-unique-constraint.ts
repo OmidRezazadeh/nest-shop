@@ -3,7 +3,7 @@ import { IsUniqueConstraintInput } from "./is-unique";
 import { EntityManager } from 'typeorm';
 import { Injectable } from "@nestjs/common";
 
-@ValidatorConstraint({name:"IsEmailUniqueConstraint", async:true})
+@ValidatorConstraint({name:"IsUniqueConstraint", async:true})
 @Injectable()
 export class IsUniqueConstraint implements ValidatorConstraintInterface{
     constructor(

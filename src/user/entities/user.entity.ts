@@ -1,4 +1,3 @@
-import { profile } from "console";
 import { USER_STATUS } from "src/common/constants/user-status";
 import { Profile } from "src/profile/entities/profile";
 import { Role } from "src/role/entities/role.entity";
