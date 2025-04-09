@@ -89,8 +89,8 @@ export class ProfileService {
           where: { imageable_id: userId, imageable_type: 'profile' },
         });
       } catch (error) {
-        console.error('Error updating photo:', error);
-        throw new Error('Database error while updating photo.');
+        console.error('خطا در به‌روزرسانی عکس:', error);
+        throw new Error('خطای پایگاه داده هنگام به‌روزرسانی عکس');
       }
     }
   }
