@@ -32,7 +32,7 @@ export class TagService {
      await this.tagRepository.update({id:id},{name:updateDto.name})
   }
   async findAll(body) {
-   console.log(body.name)
+ 
    const page = body.page || 1;
    const limit = body.limit || 10;
    const skip = (page - 1) * limit;
@@ -42,8 +42,12 @@ export class TagService {
      
      where.name = ILike(`%${body.name}%`);
    }
+   if (body.isActive !== undefined) {
+      where.isActive = body.isActive;
+    }
+  
  
-   const [data, total] = await this.tagRepository.findAndCount({
+   const [tags, total] = await this.tagRepository.findAndCount({
      where,
      skip,
      take: limit,
@@ -51,12 +55,16 @@ export class TagService {
    });
  
    return {
-     data,
+     tags,
      total,
      page,
      limit,
      totalPages: Math.ceil(total / limit),
    };
+ }
+
+ async findById(id){
+   return await this.tagRepository.findOne({where:{id:id}})
  }
  
 }

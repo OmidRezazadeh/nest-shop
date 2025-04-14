@@ -42,7 +42,17 @@ constructor(
       };
     }
 
-    
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(ROLE_NAME.Admin) 
+    @Get('/:id')
+    async single(@Param('id') id: number) {
+      const tag = await this.tagService.findById(id);
+      return {
+        data: tag,
+      };
+    }
+
+
     
 
   }
