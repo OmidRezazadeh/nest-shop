@@ -1,12 +1,12 @@
-import { Injectable, Body } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Tag } from './entities/tag.entity';
 import { ILike, Repository } from 'typeorm';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
-
 import { CreateTagDto } from './dto/Create.Dto';
 import { UpdateTagDto } from './dto/UpdateTag.Dto';
 import { ListTagsDto } from './dto/ListTags.Dto';
+import { paginate } from 'src/utils/pagination';
 
 
 
@@ -60,30 +60,9 @@ export class TagService {
       order: { id: 'DESC' }, 
     });
   
-    // Calculate the total number of pages
-    const totalPages = Math.ceil(total / limit);
-  
-    // Ensure currentPage does not exceed totalPages
-    const currentPage = page > totalPages ? totalPages : page;
-  
-    // Set nextPage only if there is a next page
-    const nextPage = currentPage < totalPages ? currentPage + 1 : null;
-  
-    // Set prevPage only if currentPage is greater than 1
-    const prevPage = currentPage > 1 ? currentPage - 1 : null;
-  
-    // Return data along with pagination metadata
-    return {
-     // List of tags
-      data: tags, 
-      meta: {
-        total,         
-        currentPage,   
-        totalPages,    
-        nextPage,      
-        prevPage,      
-      },
-    };
+    // Use the paginate helper to build the response
+    console.log(tags);
+    return paginate(tags, total, page, limit);
   }
   
   
