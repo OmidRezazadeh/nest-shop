@@ -21,6 +21,7 @@ import { DateService } from './date/date.service';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TagModule } from './tag/tag.module';
 import { Tag } from './tag/entities/tag.entity';
+import { ProductModule } from './product/product.module';
 
 dotenv.config();
 @Module({
@@ -55,6 +56,7 @@ dotenv.config();
     EmailModule,
     UploadModule,
     TagModule,
+    ProductModule,
   
     ],
   controllers: [AppController],
