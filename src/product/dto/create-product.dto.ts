@@ -1,0 +1,32 @@
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator";
+
+export class CreateProductDto{
+  @IsString({message:"نام باید از نوع رشته باشد"})
+  @MaxLength(100,{message:"تعداد کاراکتر های وارد شده حداکثر باید ۱۰۰عدد باشد"})
+  name: string;
+
+  @IsString({message:"توضیحات باید از نوع رشته باشد"})
+  @IsNotEmpty({message:"لطفا توضیحات محصول را وارد کنید "})
+  description: string;
+
+  @IsNumber()
+  price:number
+  
+  @IsNumber()
+  @IsPositive()
+  quantity: number;
+
+  @IsOptional()
+  @IsArray({message:'تصاویر باید یک آرایه از نام فایل‌ها باشند'})
+  @IsString({ each: true,message: 'هر تصویر باید به صورت رشته باشد'})
+  file_names?: string[];
+
+  
+  @IsOptional()
+  @IsArray({message:'تگ باید یک آرایه از نام فایل‌ها باشند'})
+  tag_ideas ?: number[];
+
+  
+  
+  
+}

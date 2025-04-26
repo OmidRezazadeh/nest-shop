@@ -36,7 +36,7 @@ export class ProfileService {
     await this.profileRepository.update(userId, { bio: bio });
   }
 
-  async moveImage(imageName: string, userId: number) {
+  async moveImage(imageName: string, userId: number) { 
     const imagePath = path.join(__dirname, `../../${process.env.UPLOAD_DIR}/${imageName}`);
   
     if (!fs.existsSync(imagePath)) {
@@ -109,5 +109,7 @@ export class ProfileService {
 
 
   }
+
+
   
 }

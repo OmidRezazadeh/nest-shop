@@ -22,6 +22,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { TagModule } from './tag/tag.module';
 import { Tag } from './tag/entities/tag.entity';
 import { ProductModule } from './product/product.module';
+import { RedisModule } from './redis/redis.module';
+import { ProductTagModule } from './product-tag/product-tag.module';
+import { ProductTag } from './product-tag/entities/product-tag.entity';
+import { Product } from './product/entities/product.entity';
 
 dotenv.config();
 @Module({
@@ -45,7 +49,7 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile,confirmationCode,Photo,Tag], 
+      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product], 
       synchronize: true,
     }),
     UserModule, 
@@ -57,6 +61,8 @@ dotenv.config();
     UploadModule,
     TagModule,
     ProductModule,
+    RedisModule,
+    ProductTagModule,
   
     ],
   controllers: [AppController],
