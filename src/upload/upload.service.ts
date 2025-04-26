@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Photo } from './entities/photo.entity';
 import { Repository } from 'typeorm';
@@ -32,4 +32,30 @@ export class UploadService {
           });
           return image
     }
+
+
+    async validateImageExist(file_name: string){
+       const imagePath = path.join(__dirname, `../../${process.env.UPLOAD_DIR}/${file_name}`);
+  
+       if (!fs.existsSync(imagePath)) {
+         throw new NotFoundException('عکس مورد نظر یافت نشد');
+       }
+
+    }
+    
+    async moveImageProduct(file_names: any, productId:number){
+        const productFolder = path.join(__dirname, `../../${process.env.PRODUCT_DIR}/${productId}`);
+        for (const file_name of file_names) {
+
+        if (!fs.existsSync(productFolder)) {
+        fs.mkdirSync(productFolder, { recursive: true });
+        }
+
+       const imagePath = path.join(__dirname, `../../${process.env.UPLOAD_DIR}/${file_name}`);
+       const newFilePath = path.join(productFolder, file_name);
+       fs.renameSync(imagePath, newFilePath);
+    }
+    
+}
+
 }

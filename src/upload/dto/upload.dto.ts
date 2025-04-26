@@ -3,11 +3,11 @@ import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 export class UploadDto {
   @IsNotEmpty()
   @IsNumber()
-  imageable_id: number; // Associated ID (User, Product, etc.)
+  imageable_id: number;
 
   @IsNotEmpty()
   @IsString()
-  imageable_type: string; // Model name (User, Product, etc.)
+  imageable_type: string; 
 
   @IsNotEmpty()
   @IsString()
