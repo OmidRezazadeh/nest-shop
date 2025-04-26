@@ -4,7 +4,7 @@ import { RolesGuard } from 'src/guards/Role/role/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { ROLE_NAME } from '../common/constants/role-name';
 import { TagService } from './tag.service';
-import { CreateTagDto } from './dto/Create.Dto';
+import { CreateTagDto } from './dto/CreateTag.Dto';
 import { UpdateTagDto } from './dto/UpdateTag.Dto';
 import { ListTagsDto } from './dto/ListTags.Dto';
 

@@ -1,7 +1,8 @@
-// tag.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany } from 'typeorm';
+import { ProductTag } from 'src/product-tag/entities/product-tag.entity';
+import { Product } from 'src/product/entities/product.entity';
 
-@Entity("tags")
+@Entity('tags')
 export class Tag {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,4 +12,10 @@ export class Tag {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @OneToMany(() => ProductTag, (productTag) => productTag.tag)
+  productTags: ProductTag[];
+
+  @ManyToMany(() => Product, (product) => product.tags)
+  products: Product[];
 }

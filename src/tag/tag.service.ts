@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Tag } from './entities/tag.entity';
 import { ILike, Repository } from 'typeorm';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
-import { CreateTagDto } from './dto/Create.Dto';
+import { CreateTagDto } from './dto/CreateTag.Dto';
 import { UpdateTagDto } from './dto/UpdateTag.Dto';
 import { ListTagsDto } from './dto/ListTags.Dto';
 import { paginate } from 'src/utils/pagination';
