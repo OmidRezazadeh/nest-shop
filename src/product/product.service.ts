@@ -23,11 +23,11 @@ export class ProductService {
         @InjectRepository(ProductTag)
         private readonly productTagRepository:Repository<ProductTag>,
 
-
+        private readonly dataService:DateService,
         private readonly uploadService:UploadService,
         private readonly dataSource: DataSource,
 
-        private readonly dataService:DateService
+
 
     ){
 
@@ -87,7 +87,7 @@ export class ProductService {
           throw new BadRequestException('محصول یافت نشد.');
         }
     
-        await queryRunner.commitTransaction();
+     
     
         const productResponse = plainToInstance(ProductResponseDto, {
           id: productWithRelations.id,
@@ -96,8 +96,8 @@ export class ProductService {
           price: productWithRelations.price,
           quantity: productWithRelations.quantity,
           status: productWithRelations.status,
-          created_at: productWithRelations.created_at,
-          updated_at: productWithRelations.updated_at,
+          created_at: this.dataService.convertToJalali(productWithRelations.created_at),
+          updated_at: this.dataService.convertToJalali(productWithRelations.updated_at),
           tags: productWithRelations.productTags?.map(pt => ({
             id: pt.tag.id,
             name: pt.tag.name,
@@ -107,7 +107,8 @@ export class ProductService {
             filename: photo.filename,
           })),
         }, { excludeExtraneousValues: true });
-    
+        await queryRunner.commitTransaction();
+        
         return productResponse;
     
       } catch (error) {
