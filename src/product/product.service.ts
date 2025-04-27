@@ -15,6 +15,7 @@ import { ListProductDto } from './dto/list-product.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/redis/redis-keys-constants';
 import { paginate } from 'src/utils/pagination';
+import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
 
 @Injectable()
 export class ProductService {
@@ -202,5 +203,49 @@ export class ProductService {
 
 return paginate(products, total, page, limit);
 
+ }
+
+ async getProduct(id: number){
+  const cacheKey= `${RedisKeys.PRODUCT_SINGLE}:${id}`;
+  const cachedProduct = await this.redisService.getValue(cacheKey);
+  if (cachedProduct) {
+    return cachedProduct; 
+  }
+
+    const product=  await this.productRepository.findOne({where:{id:id},
+      relations: ['productTags', 'productTags.tag', 'photos'],
+    })
+     if (!product) {
+      throw new BadRequestException('محصول یافت نشد.');
+     }
+   const productResponse = plainToInstance(
+      ProductResponseDto,
+      {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        quantity: product.quantity,
+        status: product.status,
+        created_at: this.dataService.convertToJalali(
+          product.created_at,
+        ),
+        updated_at: this.dataService.convertToJalali(
+          product.updated_at,
+        ),
+        tags: product.productTags?.map((pt) => ({
+          id: pt.tag.id,
+          name: pt.tag.name,
+        })),
+        photos: product.photos?.map((photo) => ({
+          id: photo.id,
+          filename: photo.filename,
+        })),
+      },
+      { excludeExtraneousValues: true },
+    );
+
+    await this.redisService.setValue(cacheKey, JSON.stringify(productResponse))
+   return productResponse;
  }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductService } from './product.service';
 import { RedisKeys } from 'src/redis/redis-keys-constants';
@@ -26,8 +26,13 @@ export class ProductController {
         await this.redisService.deleteValue(productCacheKey);
         return product
 }
-     @Get('list')
-  async list(@Query() listProductDto:ListProductDto){
+  @Get('/list')
+  async list(
+    @Query() listProductDto:ListProductDto,
+    @Param('id') id: number
+  ){
+
+     
     const page = listProductDto.page || 1;
     const limit = listProductDto.limit || 10;
 
@@ -46,5 +51,12 @@ export class ProductController {
     
   }
 
+  @Get('/list/:id')
+  async getProduct(
+    @Param('id') id: number
+  ){
+   return await this.productService.getProduct(id)
+    
+  } 
 
 }
