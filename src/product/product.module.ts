@@ -8,6 +8,7 @@ import { Photo } from 'src/upload/entities/photo.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { UploadService } from 'src/upload/upload.service';
 import { DateService } from 'src/date/date.service';
+import { RedisService } from 'src/redis/redis.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Product,ProductTag,Photo]),
   JwtModule.registerAsync({
@@ -19,7 +20,7 @@ import { DateService } from 'src/date/date.service';
 }),
 ],
   controllers: [ProductController],
-  providers: [ProductService, UploadService,DateService]
+  providers: [ProductService, UploadService,DateService,RedisService]
 })
 export class ProductModule {
   

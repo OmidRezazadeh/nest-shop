@@ -61,7 +61,6 @@ export class TagService {
     });
   
     // Use the paginate helper to build the response
-    console.log(tags);
     return paginate(tags, total, page, limit);
   }
   
