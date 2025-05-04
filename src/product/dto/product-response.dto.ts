@@ -1,6 +1,5 @@
 import { Expose, Type } from 'class-transformer';
 
-import { UploadDto } from '../../upload/dto/upload.dto';
 import { TagResponseDto } from 'src/tag/dto/TagResponseDto';
 import { PhotoResponseDto } from 'src/upload/dto/photoResponse.Dto';
 

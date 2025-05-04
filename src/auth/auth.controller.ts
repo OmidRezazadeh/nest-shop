@@ -16,7 +16,6 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { ForgotPasswordDto } from './dto/forgotPasswordDto';
 import { UserService } from '../user/user.service';
 import { SavePasswordDto } from './dto/savePasswordDto';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CustomThrottlerGuard } from '../guards/throttler/custom-throttler.guard';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { Public } from 'src/common/decorators/public.decorator';
@@ -106,10 +105,11 @@ export class AuthController {
 
   }
   @Post('login')
-  @UseGuards(CustomThrottlerGuard) // فقط برای این متد
+  @UseGuards(CustomThrottlerGuard) 
   async login(@Body() loginDto:LoginDto){
     return this.authService.login(loginDto)
   }
+
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req) {

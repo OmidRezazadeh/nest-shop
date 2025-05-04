@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { ProductService } from './product.service';
 import { RedisKeys } from 'src/redis/redis-keys-constants';
 import { RedisService } from '../redis/redis.service';
 import { plainToInstance } from 'class-transformer';
@@ -9,6 +8,12 @@ import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/Role/role/role.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { ListProductDto } from './dto/list-product.dto';
+import { EditProductDto } from './dto/edit-product.dto';
+import { ProductService } from './product.service';
+
+
+
+
 
 @Controller('product')
 export class ProductController {
@@ -58,5 +63,24 @@ export class ProductController {
    return await this.productService.getProduct(id)
     
   } 
+
+
+
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE_NAME.Admin) 
+  @Put('/:id')
+  async edit(@Body() editProductDto:EditProductDto,
+  @Param('id') id: number){
+   await this.productService.update(id, editProductDto);
+    return {
+      "message":" محصول با موفقیت  بروز رسانی شد"
+    }
+ 
+  }
+
+
+
+
 
 }

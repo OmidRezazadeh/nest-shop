@@ -15,7 +15,10 @@ import { ListProductDto } from './dto/list-product.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/redis/redis-keys-constants';
 import { paginate } from 'src/utils/pagination';
+import { EditProductDto } from './dto/edit-product.dto';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ProductService {
@@ -35,6 +38,193 @@ export class ProductService {
     private readonly redisService: RedisService,
   ) {}
 
+  async update(id:number, editProductDto:EditProductDto){
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    const { tag_ideas, photos } = editProductDto;
+    try {
+      
+      const product = await queryRunner.manager
+      .getRepository(Product)
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.productTags', 'productTags')
+      .leftJoinAndSelect('productTags.tag', 'tag')
+      .leftJoinAndSelect('product.photos', 'photos')
+      .where('product.id = :id', { id })
+      .getOne();
+
+      if (!product) {
+        throw new NotFoundException("محصولی یافت نشد")
+      }
+      product.name = editProductDto.name ?? product.name;
+      product.description = editProductDto.description ?? product.description;
+      product.price = editProductDto.price ?? product.price;
+      product.quantity = editProductDto.quantity ?? product.quantity;
+
+      
+      await queryRunner.manager.save(Product, product);
+    
+      if (tag_ideas &&  tag_ideas.map(id => Number(id))) {
+      
+        const tagRepository = queryRunner.manager.getRepository(Tag);
+        const existingTags = await tagRepository.findBy({ id: In(tag_ideas) });
+
+        if (existingTags.length !== tag_ideas.length) {
+          throw new BadRequestException('برخی از تگ‌های انتخاب‌شده وجود ندارند.');
+
+        }
+
+
+         if(product.productTags.length == 0){
+
+          const newProductTags = tag_ideas.map((tagId) =>
+            queryRunner.manager.create(ProductTag, {
+              product: product,
+              tag: { id: tagId },
+            }),
+          );
+          await queryRunner.manager.save(ProductTag, newProductTags);
+        }else{
+
+          const existingTagIds = product.productTags.map(pt => pt.tag.id);
+          const tagsToRemove = existingTagIds.filter(id => !tag_ideas.includes(id));
+          const tagsToAdd = tag_ideas.filter(id => !existingTagIds.includes(id));
+          
+       
+
+          if (tagsToRemove.length > 0) {
+            for (const tagId of tagsToRemove) {
+              await queryRunner.manager.delete(ProductTag, {
+                product: { id: product.id },
+                tag: { id: tagId },
+              });
+            }
+          }
+          
+
+          if (tagsToAdd.length > 0) {
+            for (const tagId of tagsToAdd) {
+              const productTag = queryRunner.manager.create(ProductTag, {
+                product: { id: product.id },
+                tag: { id: tagId },
+              });
+              await queryRunner.manager.save(ProductTag, productTag);
+            }
+          }
+
+
+          }
+      }
+      
+      if (photos && photos.length > 0) {
+   
+         let addNumber= 0;
+         let deleteNumber = 0;
+          for(const photo of photos){ 
+            if (photo.action !== 'delete') {
+              await this.uploadService.validateImageExist(photo.file_name);
+            }
+      
+          
+            if (photo.action === 'add') {
+                 addNumber =+1
+            }
+            if (photo.action === 'delete') {
+              deleteNumber +=1
+            }
+          }
+         const totalNumber = addNumber - deleteNumber;
+
+           const totalNumberPhoto = photos.length + totalNumber;
+ 
+         if(totalNumberPhoto > 4){
+          throw new BadRequestException("تعداد عکسها نباید بیشتر از چهار باشد")
+          }
+
+          for (const photo of photos) {
+            if (photo.action === 'add') {
+
+              await this.uploadService.moveImageEditProduct(photo.file_name, product.id);
+              const newProduct = queryRunner.manager.create(Photo,{
+                filename:photo.file_name,
+                imageable_id:product.id,
+                imageable_type:'product'
+              })
+            await queryRunner.manager.save(Photo, newProduct);
+         
+          }
+            if (photo.action === 'replace' && photo.id) {
+            
+               const currentProduct =await queryRunner.manager.findOne(Photo,
+                {
+                    where: {
+                      id: photo.id,
+                      imageable_id: product.id,
+                    },
+                  });
+              
+                  if (!currentProduct) {
+                    throw new NotFoundException('عکس مورد نظر یافت نشد');
+                  }
+            
+                  const oldProductImage = path.join(
+                    __dirname,
+                    `../../${process.env.PRODUCT_DIR}/${product.id}/${currentProduct.filename}`,
+                  );
+              
+                  if (fs.existsSync(oldProductImage)) {
+                    fs.unlinkSync(oldProductImage);
+                  } else {
+                    console.warn('⚠️ فایل برای حذف پیدا نشد:', oldProductImage);
+                  }
+              
+                  const imagePath = path.join(
+                    __dirname,
+                    `../../${process.env.UPLOAD_DIR}/${photo.file_name}`,
+                  );
+                  const productFolder = path.join(
+                    __dirname,
+                    `../../${process.env.PRODUCT_DIR}/${product.id}`,
+                  );
+                  const newFilePath = path.join(productFolder, photo.file_name);
+                  fs.renameSync(imagePath, newFilePath);
+
+                  await queryRunner.manager.update(Photo,{id:photo.id},{filename:photo.file_name})
+
+            }
+
+            if (photo.action === 'delete' && photo.id) {
+
+
+
+              const oldProductImage = path.join(
+                __dirname,
+                `../../${process.env.PRODUCT_DIR}/${product.id}/${photo.file_name}`,
+              );
+          
+              
+          
+              if (oldProductImage) {
+                fs.unlinkSync(oldProductImage);
+              }
+          
+              await this.photoRepository.delete(
+                {id: photo.id,imageable_id: product.id,filename:photo.file_name}
+              );
+            }
+    }
+  }
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  
+   }
   async create(createProductDto: CreateProductDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -47,7 +237,7 @@ export class ProductService {
       const savedProduct = await queryRunner.manager.save(product);
 
       if (tag_ideas && tag_ideas.length > 0) {
-        const tagRepository = queryRunner.manager.getRepository(Tag); // اصلاح شد
+        const tagRepository = queryRunner.manager.getRepository(Tag);
         const existingTags = await tagRepository.findBy({ id: In(tag_ideas) });
 
         if (existingTags.length !== tag_ideas.length) {
@@ -66,6 +256,10 @@ export class ProductService {
       }
 
       if (file_names && file_names.length > 0) {
+       
+        if(file_names.length>4){
+        throw new BadRequestException(" تعداد عکسها نباید بیشتر از چهار  باشد")
+        }
         for (const file_name of file_names) {
           await this.uploadService.validateImageExist(file_name);
         }
@@ -248,4 +442,6 @@ return paginate(products, total, page, limit);
     await this.redisService.setValue(cacheKey, JSON.stringify(productResponse))
    return productResponse;
  }
+
+
 }
