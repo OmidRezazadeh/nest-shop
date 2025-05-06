@@ -26,6 +26,10 @@ import { RedisModule } from './redis/redis.module';
 import { ProductTagModule } from './product-tag/product-tag.module';
 import { ProductTag } from './product-tag/entities/product-tag.entity';
 import { Product } from './product/entities/product.entity';
+import { CartModule } from './cart/cart.module';
+import { CartItemModule } from './cart-item/cart-item.module';
+import { Cart } from './cart/entities/cart.entity';
+import { CartItem } from './cart-item/entities/cart-item.entity';
 
 dotenv.config();
 @Module({
@@ -49,7 +53,7 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product], 
+      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product,Cart,CartItem], 
       synchronize: true,
     }),
     UserModule, 
@@ -63,6 +67,8 @@ dotenv.config();
     ProductModule,
     RedisModule,
     ProductTagModule,
+    CartModule,
+    CartItemModule,
   
     ],
   controllers: [AppController],

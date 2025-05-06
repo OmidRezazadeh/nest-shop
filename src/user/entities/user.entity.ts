@@ -1,7 +1,8 @@
+import { Cart } from "src/cart/entities/cart.entity";
 import { USER_STATUS } from "src/common/constants/user-status";
 import { Profile } from "src/profile/entities/profile";
 import { Role } from "src/role/entities/role.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 
 
@@ -40,6 +41,9 @@ export class User{
   
   @OneToOne(()=> Profile,(profile)=>profile.user)
   profile:Profile; 
+
+  @OneToMany(()=> Cart, (cart) =>cart.user)
+  carts:Cart[]
 
   @CreateDateColumn()
   createdAt: Date;
