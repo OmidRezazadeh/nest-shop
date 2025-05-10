@@ -32,7 +32,7 @@ async findByEmail(email:string) {
    return user;
 }
 
- async findById(userId){
+ async findById(userId:number){
     const  user = await this.userRepository.findOne({where:{id: userId},
         relations: ['profile'],
     
@@ -47,6 +47,7 @@ async findByEmail(email:string) {
           id: user?.id ?? 0, 
           email: user?.email ?? '',
           phone: user?.phone ?? '' ,
+          status: user?.status ?? 0
           
         },
         role: user?.role,

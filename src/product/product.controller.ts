@@ -33,8 +33,7 @@ export class ProductController {
 }
   @Get('/list')
   async list(
-    @Query() listProductDto:ListProductDto,
-    @Param('id') id: number
+    @Query() listProductDto:ListProductDto
   ){
 
      

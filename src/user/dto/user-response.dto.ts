@@ -3,7 +3,7 @@ import { Exclude, Expose } from 'class-transformer';
 
 export class UserResponseDto {
   @Expose() 
-  user:{ id:number ,email:string, phone:string}
+  user:{ id:number ,email:string, phone:string , status:number}
   @Expose()
   image?: string;
   @Expose()

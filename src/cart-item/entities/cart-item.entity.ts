@@ -14,13 +14,15 @@ import {
   export class CartItem{
     @PrimaryGeneratedColumn()
     id: string;
-    @ManyToOne(()=> Cart,(cart)=> cart.items, {onDelete:'CASCADE'})
-    @JoinColumn({name:'cart_id'})
-    cart:Cart;
 
-    @ManyToOne(()=> Product,{eager:true})
-    @JoinColumn({name:'product_id'})
-    product:Product;
+
+  @ManyToOne(() => Cart, (cart) => cart.items, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'cart_id' })
+  cart: Cart;
+
+  @ManyToOne(() => Product, { eager: true })
+  @JoinColumn({ name: 'product_id' })
+  product: Product;
 
     
     @Column({type:"decimal", precision:10,scale:2})

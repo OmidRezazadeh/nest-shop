@@ -1,3 +1,4 @@
+import { IsOptional } from "class-validator";
 import { CartItem } from "src/cart-item/entities/cart-item.entity";
 import { User } from "src/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
@@ -6,9 +7,9 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 export class Cart{
     @PrimaryGeneratedColumn()
     id:number;
-
-    @Column('decimal')
-    description:string;
+    
+    @Column({ type: 'text', nullable: true })
+    description?: string;
 
     @Column('decimal')
     total_price:number;
@@ -18,7 +19,10 @@ export class Cart{
     user:User;
 
     @OneToMany(()=> CartItem,(cartItem)=>cartItem.cart,{cascade:true})
-    items:CartItem[]
+    items:CartItem[];
+
+    @Column({ default: 0 }) 
+    status:number;
 
     @CreateDateColumn()
     created_at: Date;

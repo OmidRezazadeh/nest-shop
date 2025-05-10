@@ -20,7 +20,7 @@ export class Product {
   @Column()
   quantity: number;
 
-  @Column({ default: 0 }) // Assuming "inactive" = 0
+  @Column({ default: 0 }) 
   status: number;
 
   @OneToMany(() => ProductTag, (productTag) => productTag.product)

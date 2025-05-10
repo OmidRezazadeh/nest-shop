@@ -30,6 +30,7 @@ import { CartModule } from './cart/cart.module';
 import { CartItemModule } from './cart-item/cart-item.module';
 import { Cart } from './cart/entities/cart.entity';
 import { CartItem } from './cart-item/entities/cart-item.entity';
+import { UniqueProductIds } from './validators/unique-product-id.validator';
 
 dotenv.config();
 @Module({
@@ -73,6 +74,6 @@ dotenv.config();
     ],
   controllers: [AppController],
   providers: [
-    AppService,IsUniqueConstraint, DateService],
+    AppService,IsUniqueConstraint, DateService,UniqueProductIds],
 })
 export class AppModule {}
