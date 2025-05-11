@@ -2,10 +2,15 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from './entities/cart.entity';
 import { DataSource, Repository } from 'typeorm';
-import { CartDto } from './dto/create-cart.dto';
+import { DateService } from '../date/date.service';
+
 import { CartItem } from '../cart-item/entities/cart-item.entity';
 import { Product } from '../product/entities/product.entity';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
+import { plainToInstance } from 'class-transformer';
+import { CartResponseDto } from './dto/cart-response.dto';
+import { getCartStatusKey } from 'src/common/constants/cart-status';
+import { CART_STATUS } from '../common/constants/cart-status';
 
 @Injectable()
 export class CartService {
@@ -20,6 +25,7 @@ export class CartService {
     private readonly CartItemRepository: Repository<CartItem>,
 
     private readonly dataSource: DataSource,
+    private readonly dataService:DateService
   ) {}
 
   async validate(cartDto: any) {
@@ -59,12 +65,13 @@ export class CartService {
         totalPrice += Number(product.price) * cart.quantity;
       }
   
-   
-      const cart = this.CartRepository.create({
+
+      const cartObject = this.CartRepository.create({
         user: { id: userId },
+        description: cartDto.description,
         total_price: totalPrice,
       });
-      const saveCart = await this.CartRepository.save(cart);
+      const saveCart = await this.CartRepository.save(cartObject);
   
  
       for (const cartItem of cartDto.cart_item) {
@@ -82,17 +89,34 @@ export class CartService {
           await this.CartItemRepository.save(saveCartItem);
       }
   
-      await queryRunner.commitTransaction();
+  await queryRunner.commitTransaction();
   const fullCart = await this.CartRepository.findOne({
        where: { id: saveCart.id },
       relations: ['items', 'items.product'],
   });
 
-  return {
-    message: 'سبد خرید با موفقیت ثبت شد',
-    cart: fullCart,
-  };
-      
+
+  const cartResponse = plainToInstance(
+    CartResponseDto,
+    {
+      id: fullCart?.id,
+      description: fullCart?.description,
+      total_price: fullCart?.total_price,
+      status: getCartStatusKey(fullCart?.status) ,
+      created_at: fullCart ? this.dataService.convertToJalali(fullCart.created_at) : null,
+      item: fullCart?.items?.map((item: any) => ({
+        id: item.id,
+        price: item.price,
+        quantity: item.quantity,
+        product: {
+          id: item.product?.id,
+          name: item.product?.name,
+        },
+      })) || [],
+    },
+    { excludeExtraneousValues: true }
+  );
+       return cartResponse;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);

@@ -8,6 +8,8 @@ import { Cart } from './entities/cart.entity';
 import { User } from 'src/user/entities/user.entity';
 import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 import { Product } from 'src/product/entities/product.entity';
+import { DateService } from 'src/date/date.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Module({
   imports:
@@ -18,7 +20,7 @@ import { Product } from 'src/product/entities/product.entity';
     signOptions:{expiresIn:process.env.JWT_EXPIRES_IN}
   })
   })],
-  providers: [CartService],
+  providers: [CartService,DateService,RedisService],
   controllers: [CartController]
 })
 export class CartModule {}

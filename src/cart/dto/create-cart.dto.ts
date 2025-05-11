@@ -14,6 +14,7 @@ export class CartItemInput {
 }
 
 export class CartDto {
+  description:string
   @IsArray({ message: 'آیتم‌های سبد باید یک آرایه باشند' })
   @ValidateNested({ each: true })
   @Type(() => CartItemInput)
