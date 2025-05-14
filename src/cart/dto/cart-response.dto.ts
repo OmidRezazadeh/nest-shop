@@ -1,6 +1,6 @@
 import { Expose, Type } from "class-transformer";
-import { ProductResponseDto } from '../../product/dto/product-response.dto';
 import { cartItemResponseDto } from "src/cart-item/dto/cart-item-response.dto";
+import { UserResponseDto } from "src/user/dto/user-response.dto";
 
 export class CartResponseDto{
 @Expose()
@@ -17,8 +17,13 @@ status:string
 created_at:string  
 
 @Expose()
+@Type(()=>UserResponseDto)
+user:UserResponseDto
+
+@Expose()
 @Type(()=>cartItemResponseDto)
 item: cartItemResponseDto[]
+
 
 
 }

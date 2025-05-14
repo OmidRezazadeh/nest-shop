@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from './entities/cart.entity';
 import { DataSource, Repository } from 'typeorm';
 import { DateService } from '../date/date.service';
-
 import { CartItem } from '../cart-item/entities/cart-item.entity';
 import { Product } from '../product/entities/product.entity';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
@@ -21,14 +20,25 @@ export class CartService {
     @InjectRepository(Product)
     private readonly ProductRepository: Repository<Product>,
 
-    @InjectRepository(CartItem)
-    private readonly CartItemRepository: Repository<CartItem>,
-
     private readonly dataSource: DataSource,
     private readonly dataService:DateService
   ) {}
 
-  async validate(cartDto: any) {
+  async validate(cartDto: any, userId:number) {
+       
+
+     const ExitsCart = await this.CartRepository.findOne({
+       where: {
+         user: { id: userId },
+         status: CART_STATUS.default
+       }
+     });
+     if (ExitsCart) {
+          throw new  BadRequestException(" سبد خرید دیگری وجود دارد")
+      }
+
+
+
     for (const cart of cartDto.cart_item) {
       const product = await this.ProductRepository.findOne({
         where: { id: cart.product_id },
@@ -42,6 +52,7 @@ export class CartService {
         throw new BadRequestException(' تعداد محصول بیش از حد موجود است ');
       }
     }
+
   }
 
   async create(cartDto: any, userId: number) {
@@ -54,10 +65,9 @@ export class CartService {
     try {
 
       for (const cart of cartDto.cart_item) {
-        const product = await this.ProductRepository.findOne({
-          where: { id: cart.product_id },
-        });
-  
+          const product= await queryRunner.manager.findOne(Product,
+            {where:{id:cart.product_id}
+          });
         if (!product) {
           throw new NotFoundException(`محصول با شناسه ${cart.product_id} یافت نشد`);
         }
@@ -66,36 +76,34 @@ export class CartService {
       }
   
 
-      const cartObject = this.CartRepository.create({
+      const cartObject = queryRunner.manager.create(Cart,{
         user: { id: userId },
         description: cartDto.description,
         total_price: totalPrice,
       });
-      const saveCart = await this.CartRepository.save(cartObject);
+      const saveCart = await  queryRunner.manager.save(Cart,cartObject);
   
  
       for (const cartItem of cartDto.cart_item) {
-        const product = await this.ProductRepository.findOne({
+        const product = await queryRunner.manager.findOne(Product,{
           where: { id: cartItem.product_id },
         });
   
-        const saveCartItem = this.CartItemRepository.create({
+        const saveCartItem = queryRunner.manager.create(CartItem,{
             cart: { id: saveCart.id },
             product: { id: product?.id },
             price: Number(product?.price),
             quantity: cartItem.quantity,
           });
         
-          await this.CartItemRepository.save(saveCartItem);
+          await queryRunner.manager.save(CartItem,saveCartItem);
       }
   
   await queryRunner.commitTransaction();
-  const fullCart = await this.CartRepository.findOne({
+  const fullCart = await queryRunner.manager.findOne(Cart,{
        where: { id: saveCart.id },
-      relations: ['items', 'items.product'],
+      relations: ['items','items.product'],
   });
-
-
   const cartResponse = plainToInstance(
     CartResponseDto,
     {
@@ -103,7 +111,7 @@ export class CartService {
       description: fullCart?.description,
       total_price: fullCart?.total_price,
       status: getCartStatusKey(fullCart?.status) ,
-      created_at: fullCart ? this.dataService.convertToJalali(fullCart.created_at) : null,
+      created_at: fullCart ? this.dataService.convertToJalali(fullCart.created_at) : null,     
       item: fullCart?.items?.map((item: any) => ({
         id: item.id,
         price: item.price,
@@ -125,5 +133,14 @@ export class CartService {
       await queryRunner.release();
     }
   }
+
+ async findByUserId(userId:number){
+       return await this.CartRepository.findOne({
+        where:{status:CART_STATUS.default,user:{id:userId}},
+        relations:['items']
+      })
+      
+      
+ }
   
 }
