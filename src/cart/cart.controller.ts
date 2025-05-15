@@ -23,12 +23,21 @@ export class CartController {
    @Request() request
 ){
         const userId = request.user.id;
-        await this.cartService.validate(cartDto,userId)
+         await this.cartService.validate(cartDto,userId)
          const cart= await this.cartService.create(cartDto,userId);
          const key = `${RedisKeys.CART_ID}:${userId}`;
          await  this.redisService.setValue(key,JSON.stringify(cart))
          return {cart}
       }
 
+      
+   @UseGuards(JwtAuthGuard,CheckVerifiedGuard)
+      @Delete('delete')
+      async delete(@Request() request){
+         const userId = request.user.id;
+         await this.cartService.checkExistsCart(userId)
+         await this.cartService.deleteByUserId(userId)
+         return {message:"سبد خرید با موفقیت حذف شد"}
+      }
 
 }
