@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Post,Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post,Request, UseGuards } from '@nestjs/common';
 import { CartDto } from './dto/create-cart.dto';
 import { DataSource } from 'typeorm';
 import { CartService } from './cart.service';
@@ -15,6 +15,22 @@ export class CartController {
 
 
    ){}
+
+ @Get()
+ @UseGuards(JwtAuthGuard,CheckVerifiedGuard)  
+ async getCart(@Request() request){
+   const userId = request.user.id;
+   const key = `${RedisKeys.CART_ID}:${userId}`;
+   let cart = await this.redisService.getValue(key);
+   if (!cart) {
+      const dbCart = await this.cartService.getCartByUserId(userId);
+      if (dbCart) {
+         await this.redisService.setValue(key, JSON.stringify(dbCart));
+         cart = JSON.stringify(dbCart);
+      }
+   }
+   return { cart: cart ? JSON.parse(cart) : null };
+ }
 
    @UseGuards(JwtAuthGuard,CheckVerifiedGuard)
    @Post('store')

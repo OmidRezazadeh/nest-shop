@@ -131,6 +131,44 @@ export class CartService {
     }
   }
 
+  async getCartByUserId(userId:number){
+    const cart = await this.CartRepository.findOne({
+      where: {
+        user: { id: userId },
+        status: CART_STATUS.default,
+      },
+      relations: ['items', 'items.product'],
+    });
+
+    if (!cart) {
+      throw new BadRequestException(' سبد خرید وجود ندارد');
+    }
+      const cartResponse = plainToInstance(
+        CartResponseDto,
+        {
+          id: cart?.id,
+          description: cart?.description,
+          total_price: cart?.total_price,
+          status: getCartStatusKey(cart?.status),
+          created_at: cart
+            ? this.dataService.convertToJalali(cart.created_at)
+            : null,
+          item:
+          cart?.items?.map((item: any) => ({
+              id: item.id,
+              price: item.price,
+              quantity: item.quantity,
+              product: {
+                id: item.product?.id,
+                name: item.product?.name,
+              },
+            })) || [],
+        },
+        { excludeExtraneousValues: true },
+      );
+      return cartResponse;
+ }
+
   async findByUserId(userId: number) {
     return await this.CartRepository.findOne({
       where: { status: CART_STATUS.default, user: { id: userId } },
@@ -155,4 +193,5 @@ export class CartService {
   async deleteByUserId(userId:number){
     await this.CartRepository.delete({user:{id:userId}})
   }
+
 }
