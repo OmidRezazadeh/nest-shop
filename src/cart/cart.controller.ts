@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Post,Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { CartDto } from './dto/create-cart.dto';
 import { DataSource } from 'typeorm';
 import { CartService } from './cart.service';
@@ -9,53 +17,82 @@ import { RedisKeys } from 'src/redis/redis-keys-constants';
 
 @Controller('cart')
 export class CartController {
-   constructor(
-      private readonly redisService: RedisService,
-      private readonly cartService:CartService,
+  constructor(
+    private readonly redisService: RedisService,
+    private readonly cartService: CartService,
+  ) {}
 
+  // This route retrieves the current user's cart.
+  // It first checks Redis cache. If not found, it loads from the database and caches it.
+  @Get()
+  @UseGuards(JwtAuthGuard, CheckVerifiedGuard) // Ensure user is authenticated and verified
+  async getCart(@Request() request) {
+    const userId = request.user.id; // Extract user ID from the JWT token
 
-   ){}
+    // Define the Redis key for this user's cart
+    const key = `${RedisKeys.CART_ID}:${userId}`;
 
- @Get()
- @UseGuards(JwtAuthGuard,CheckVerifiedGuard)  
- async getCart(@Request() request){
-   const userId = request.user.id;
-   const key = `${RedisKeys.CART_ID}:${userId}`;
-   let cart = await this.redisService.getValue(key);
-   if (!cart) {
+    // Try to retrieve the cart from Redis cache
+    let cart = await this.redisService.getValue(key);
+
+    // If cart is not in Redis, fetch from database
+    if (!cart) {
       const dbCart = await this.cartService.getCartByUserId(userId);
+
+      // If cart exists in DB, cache it in Redis
       if (dbCart) {
-         await this.redisService.setValue(key, JSON.stringify(dbCart));
-         cart = JSON.stringify(dbCart);
+        await this.redisService.setValue(key, JSON.stringify(dbCart)); // Save to Redis
+        cart = JSON.stringify(dbCart); // Assign to local variable for return
       }
-   }
-   return { cart: cart ? JSON.parse(cart) : null };
- }
+    }
 
-   @UseGuards(JwtAuthGuard,CheckVerifiedGuard)
-   @Post('store')
-   async create(
-   @Body() cartDto:CartDto, 
-   @Request() request
-){
-        const userId = request.user.id;
-         await this.cartService.validate(cartDto,userId)
-         const cart= await this.cartService.create(cartDto,userId);
-         const key = `${RedisKeys.CART_ID}:${userId}`;
-         await  this.redisService.setValue(key,JSON.stringify(cart))
-         return {cart}
-      }
+    // Return the cart (parsed from string if found, otherwise null)
+    return { cart: cart ? JSON.parse(cart) : null };
+  }
 
-      
-   @UseGuards(JwtAuthGuard,CheckVerifiedGuard)
-      @Delete('delete')
-      async delete(@Request() request){
-         const userId = request.user.id;
-         await this.cartService.checkExistsCart(userId)
-         await this.cartService.deleteByUserId(userId);
-         const key = `${RedisKeys.CART_ID}:${userId}`;
-         await this.redisService.deleteValue(key)
-         return {message:"سبد خرید با موفقیت حذف شد"}
-      }
+  // Create a new cart for the authenticated and verified user
+  @UseGuards(JwtAuthGuard, CheckVerifiedGuard) // Ensure the user is authenticated and verified before creating a cart
+  @Post('store')
+  async create(
+    @Body() cartDto: CartDto, // Cart data sent from client (items, description, etc.)
+    @Request() request, // Request object to access the current user
+  ) {
+    const userId = request.user.id; // Extract user ID from the authenticated request
 
+    // Validate the incoming cart data and check if user can create a cart (e.g., no existing active cart)
+    await this.cartService.validate(cartDto, userId);
+
+    // Create the cart in the database using the validated data
+    const cart = await this.cartService.create(cartDto, userId);
+
+    // Define the Redis cache key for this user's cart
+    const key = `${RedisKeys.CART_ID}:${userId}`;
+
+    // Cache the newly created cart data in Redis as a JSON string for quick future access
+    await this.redisService.setValue(key, JSON.stringify(cart));
+
+    // Return the created cart data as the response
+    return { cart };
+  }
+
+  @UseGuards(JwtAuthGuard, CheckVerifiedGuard) // Ensure user is authenticated and verified before deleting the cart
+  @Delete('delete')
+  async delete(@Request() request) {
+    const userId = request.user.id; // Extract user ID from the authenticated request
+
+    // Check if the user has an existing active cart to delete
+    await this.cartService.checkExistsCart(userId);
+
+    // Delete the cart associated with the user from the database
+    await this.cartService.deleteByUserId(userId);
+
+    // Define the Redis cache key for this user's cart
+    const key = `${RedisKeys.CART_ID}:${userId}`;
+
+    // Remove the cached cart data from Redis to keep cache consistent
+    await this.redisService.deleteValue(key);
+
+    // Return a success message confirming cart deletion
+    return { message: 'سبد خرید با موفقیت حذف شد' };
+  }
 }

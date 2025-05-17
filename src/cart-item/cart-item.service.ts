@@ -21,44 +21,63 @@ export class CartItemService {
    ){}
 
 
-   async extractCartAndItemIds(cartItemDeleteDto: any, userId: number) {
-      const cart = await this.cartService.findByUserId(userId);
-      
-      if (!cart) {
-        throw new NotFoundException('سبد خریدی یافت نشد');
-      }
-    
-      const cartItemIds: number[] = cart.items.map(item => Number(item.id));
-      const currentCartItemIds: number[] = cartItemDeleteDto.cart_item_ids.map((id: any) => Number(id));
-    
-      return { cart, cartItemIds, currentCartItemIds };
-    }
 
+// This method fetches the user's cart and extracts all cart item IDs
+async extractCartAndItemIds(cartItemDeleteDto: any, userId: number) {
+  // Find the user's cart from the database
+  const cart = await this.cartService.findByUserId(userId);
+  
+  // If no cart exists, throw a 404 error
+  if (!cart) {
+    throw new NotFoundException('سبد خریدی یافت نشد'); // "No cart found"
+  }
 
-   async validateDelete(cartItemDeleteDto: any, userId: number) {
-      const {cartItemIds, currentCartItemIds } = await this.extractCartAndItemIds(cartItemDeleteDto, userId);
+  // Get all existing cart item IDs from the user's cart
+  const cartItemIds: number[] = cart.items.map(item => Number(item.id));
 
-      const allExist = currentCartItemIds.every(value => cartItemIds.includes(value));
-    
-      if (!allExist) {
-        throw new BadRequestException('برخی آیتم‌ها در سبد خرید شما وجود ندارند.');
-      }
-   
+  // Get the item IDs the user wants to delete from the request body
+  const currentCartItemIds: number[] = cartItemDeleteDto.cart_item_ids.map((id: any) => Number(id));
 
-
+  // Return the cart and both ID arrays
+  return { cart, cartItemIds, currentCartItemIds };
 }
-async delete(cartItemDeleteDto:any, userId:any){
-   const { cart, cartItemIds, currentCartItemIds } = await this.extractCartAndItemIds(cartItemDeleteDto, userId);
- 
-   if (cartItemIds.length===currentCartItemIds.length ) {
-   await this.cartRepository.delete({id:cart.id});
-   } else {
-      
+
+
+
+
+// This method ensures that the items to be deleted actually exist in the user's cart
+async validateDelete(cartItemDeleteDto: any, userId: number) {
+  // Extract the cart and both sets of item IDs
+  const { cartItemIds, currentCartItemIds } = await this.extractCartAndItemIds(cartItemDeleteDto, userId);
+
+  // Check if every ID the user wants to delete is actually in their cart
+  const allExist = currentCartItemIds.every(value => cartItemIds.includes(value));
+
+  // If some items don't exist in the cart, throw a 400 Bad Request error
+  if (!allExist) {
+    throw new BadRequestException('برخی آیتم‌ها در سبد خرید شما وجود ندارند.'); // "Some items are not in your cart."
+  }
+}
+
+
+
+// This method deletes cart items or the entire cart depending on the deletion scenario
+async delete(cartItemDeleteDto: any, userId: any) {
+  // Extract the cart and item IDs
+  const { cart, cartItemIds, currentCartItemIds } = await this.extractCartAndItemIds(cartItemDeleteDto, userId);
+
+  // If all items in the cart are to be deleted, delete the entire cart record
+  if (cartItemIds.length === currentCartItemIds.length) {
+    await this.cartRepository.delete({ id: cart.id });
+  } else {
+    // Otherwise, delete only the specific cart items one by one
     for (const cartItemId of currentCartItemIds) {
       await this.cartItemRepository.delete(cartItemId);
     }
   }
-
 }
+
+
+
 
 }
