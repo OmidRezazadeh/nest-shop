@@ -36,7 +36,9 @@ export class CartController {
       async delete(@Request() request){
          const userId = request.user.id;
          await this.cartService.checkExistsCart(userId)
-         await this.cartService.deleteByUserId(userId)
+         await this.cartService.deleteByUserId(userId);
+         const key = `${RedisKeys.CART_ID}:${userId}`;
+         await this.redisService.deleteValue(key)
          return {message:"سبد خرید با موفقیت حذف شد"}
       }
 
