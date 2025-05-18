@@ -10,6 +10,7 @@ import { Product } from 'src/product/entities/product.entity';
 import { DateService } from 'src/date/date.service';
 import { User } from 'src/user/entities/user.entity';
 import { RedisService } from 'src/redis/redis.service';
+import { LogsModule } from 'src/logs/logs.module';
 
 @Module({
   imports:
@@ -19,7 +20,8 @@ import { RedisService } from 'src/redis/redis.service';
       secret:process.env.JWT_SECRET,
       signOptions:{expiresIn:process.env.JWT_EXPIRES_IN}
     })
-  })
+  }),
+ LogsModule
 ],
 
   providers: [CartItemService, CartService, DateService,RedisService],

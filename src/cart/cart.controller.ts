@@ -8,7 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CartDto } from './dto/create-cart.dto';
-import { DataSource } from 'typeorm';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { CheckVerifiedGuard } from 'src/guards/check-verfied/check-verified.guard';

@@ -10,6 +10,7 @@ import { plainToInstance } from 'class-transformer';
 import { CartResponseDto } from './dto/cart-response.dto';
 import { getCartStatusKey } from 'src/common/constants/cart-status';
 import { CART_STATUS } from '../common/constants/cart-status';
+import { LogsService } from '../logs/logs.service';
 
 @Injectable()
 export class CartService {
@@ -22,6 +23,7 @@ export class CartService {
 
     private readonly dataSource: DataSource,
     private readonly dataService: DateService,
+    private readonly logsService:LogsService
   ) {}
 
 // This method validates the incoming cart before creation:
@@ -119,7 +121,12 @@ async create(cartDto: any, userId: number) {
 
       // Save the CartItem entity in the database
       await queryRunner.manager.save(CartItem, saveCartItem);
+     
     }
+    await this.logsService.log(
+      'سبد خرید با موفقیت ساخته شد',
+      'CartService'
+    )
 
     // Commit the transaction if all operations succeed
     await queryRunner.commitTransaction();
@@ -263,6 +270,8 @@ async checkExistsCart(userId: number) {
 async deleteByUserId(userId: number) {
   // Perform a delete operation in the Cart table where the user ID matches
   await this.CartRepository.delete({ user: { id: userId } });
+  await this.logsService.log('سبد خرید با موفقیت حذف شد', 'CartService');
+
 }
 
 }

@@ -1,11 +1,9 @@
 import {
-  IsArray,
-  IsNotEmpty,
+
   IsNumber,
   IsOptional,
   IsPositive,
-  IsString,
-  MaxLength,
+
 } from 'class-validator';
 
 export class ListProductDto {

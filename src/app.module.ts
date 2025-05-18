@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -31,6 +31,9 @@ import { CartItemModule } from './cart-item/cart-item.module';
 import { Cart } from './cart/entities/cart.entity';
 import { CartItem } from './cart-item/entities/cart-item.entity';
 import { UniqueProductIds } from './validators/unique-product-id.validator';
+import { LogsModule } from './logs/logs.module';
+import { Log } from './logs/entities/log.entity';
+
 
 dotenv.config();
 @Module({
@@ -45,8 +48,13 @@ dotenv.config();
           limit: 3,
         },
       ],
+    
+    
     }),
+
+
     ConfigModule.forRoot(),
+    TypeOrmModule.forFeature([Log]),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -54,9 +62,9 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product,Cart,CartItem], 
+      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product,Cart,CartItem,Log], 
       synchronize: true,
-    }),
+    }), 
     UserModule, 
     RoleModule,
     AuthModule,
@@ -70,10 +78,12 @@ dotenv.config();
     ProductTagModule,
     CartModule,
     CartItemModule,
+    LogsModule,
   
     ],
   controllers: [AppController],
   providers: [
-    AppService,IsUniqueConstraint, DateService,UniqueProductIds],
+    AppService,IsUniqueConstraint, DateService,UniqueProductIds
+  ],
 })
 export class AppModule {}
