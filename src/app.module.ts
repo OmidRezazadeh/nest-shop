@@ -33,6 +33,7 @@ import { CartItem } from './cart-item/entities/cart-item.entity';
 import { UniqueProductIds } from './validators/unique-product-id.validator';
 import { LogsModule } from './logs/logs.module';
 import { Log } from './logs/entities/log.entity';
+import { OrderModule } from './order/order.module';
 
 
 dotenv.config();
@@ -79,6 +80,7 @@ dotenv.config();
     CartModule,
     CartItemModule,
     LogsModule,
+    OrderModule,
   
     ],
   controllers: [AppController],
