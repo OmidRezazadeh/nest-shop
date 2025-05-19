@@ -129,7 +129,7 @@ export class ProductService {
       
           
             if (photo.action === 'add') {
-                 addNumber =+1
+                 addNumber +=1
             }
             if (photo.action === 'delete') {
               deleteNumber +=1
