@@ -34,6 +34,11 @@ import { UniqueProductIds } from './validators/unique-product-id.validator';
 import { LogsModule } from './logs/logs.module';
 import { Log } from './logs/entities/log.entity';
 import { OrderModule } from './order/order.module';
+import { OrderItemController } from './order-item/order-item.controller';
+import { OrderItemModule } from './order-item/order-item.module';
+import { Order } from './order/entities/order';
+import { OrderItem } from './order-item/entities/order-item';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 
 dotenv.config();
@@ -41,6 +46,7 @@ dotenv.config();
 
 
   imports: [
+    EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -63,7 +69,7 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product,Cart,CartItem,Log], 
+      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product,Cart,CartItem,Log,Order,OrderItem], 
       synchronize: true,
     }), 
     UserModule, 
@@ -81,9 +87,10 @@ dotenv.config();
     CartItemModule,
     LogsModule,
     OrderModule,
+    OrderItemModule,
   
     ],
-  controllers: [AppController],
+  controllers: [AppController, OrderItemController],
   providers: [
     AppService,IsUniqueConstraint, DateService,UniqueProductIds
   ],

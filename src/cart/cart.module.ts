@@ -14,6 +14,7 @@ import { CartItemService } from 'src/cart-item/cart-item.service';
 import { LogsService } from 'src/logs/logs.service';
 import { Log } from 'src/logs/entities/log.entity';
 import { LogsModule } from 'src/logs/logs.module';
+import { cartListener } from './cart.listener';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { LogsModule } from 'src/logs/logs.module';
     }),
     LogsModule
   ],
-  providers: [CartService, DateService, RedisService, CartItemService,LogsService],
+  providers: [CartService, DateService, RedisService, CartItemService,LogsService,cartListener],
   controllers: [CartController],
 })
 export class CartModule {}
