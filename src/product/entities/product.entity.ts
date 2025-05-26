@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, Up
 import { ProductTag } from 'src/product-tag/entities/product-tag.entity';
 import { Photo } from 'src/upload/entities/photo.entity';
 import { Tag } from 'src/tag/entities/tag.entity';
+import { OrderItem } from 'src/order-item/entities/order-item';
 
 @Entity('product')
 export class Product {
@@ -28,6 +29,9 @@ export class Product {
 
   @OneToMany(() => Photo, (photo) => photo.imageable)
   photos: Photo[];
+
+  @OneToMany(()=>OrderItem,orderItem=>orderItem.product)
+   orderItems:OrderItem[]
 
   @CreateDateColumn()
   created_at: Date;

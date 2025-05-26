@@ -1,5 +1,6 @@
 import { Cart } from "src/cart/entities/cart.entity";
 import { USER_STATUS } from "src/common/constants/user-status";
+import { Order } from "src/order/entities/order";
 import { Profile } from "src/profile/entities/profile";
 import { Role } from "src/role/entities/role.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
@@ -44,6 +45,10 @@ export class User{
 
   @OneToMany(()=> Cart, (cart) =>cart.user)
   carts:Cart[]
+
+  @OneToMany(()=>Order,order=>order.user)
+  orders:Order[]
+  
 
   @CreateDateColumn()
   createdAt: Date;
