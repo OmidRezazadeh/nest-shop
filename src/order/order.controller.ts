@@ -1,6 +1,9 @@
-import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { ROLE_NAME } from 'src/common/constants/role-name';
+import { ListOrderDto } from './dto/list-order-dto';
 
 
 @Controller('order')
@@ -11,8 +14,14 @@ constructor(private readonly orderService:OrderService){}
 @Post('create')
 async create(@Request() request){
   const userId = request.user.id;
-  console.log(userId);
   return await this.orderService.createByUserId(userId);
- 
 }
+@UseGuards(UseGuards)
+@Roles(ROLE_NAME.Admin) 
+@Get('list')
+async getAllOrders(@Query() listOrderDto:ListOrderDto){
+
+return await this.orderService.list(listOrderDto);
+}	
+
 }
