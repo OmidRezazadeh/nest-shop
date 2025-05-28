@@ -8,6 +8,9 @@ import { plainToInstance } from 'class-transformer';
 import { getOrderStatusKey } from '../common/constants/order-status';
 import { DateService } from '../date/date.service';
 import { orderResponseDto } from './dto/order-response-dto';
+import { ListOrderDto } from './dto/list-order-dto';
+import { skip } from 'node:test';
+import { paginate } from 'src/utils/pagination';
 
 @Injectable()
 export class OrderService {
@@ -84,4 +87,74 @@ const savedOrder = await queryRunner.manager.save(Order, order); // ✅ Save fir
       await queryRunner.release();
     }
   }
+
+ async list(listOrderDto:ListOrderDto){
+    let page = Number(listOrderDto.page) || 1;
+    let limit = Number(listOrderDto.limit) || 10;
+    let MAX_LIMIT = Number(process.env.MAX_LIMIT) || 100;
+    limit = Math.min(limit, MAX_LIMIT);
+     const skip = (page - 1) * limit;
+    const queryBuilder = this.orderRepository.createQueryBuilder('order')
+     .leftJoinAndSelect('order.items', 'items')
+     .leftJoinAndSelect('items.product', 'product')
+
+
+
+    if (listOrderDto.status) {
+       queryBuilder.andWhere('order.status= :status',{status :listOrderDto.status})
+    }
+if (listOrderDto.minPrice !== undefined && listOrderDto.maxPrice !== undefined) {
+  queryBuilder.andWhere(
+    'order.total_price BETWEEN :minPrice AND :maxPrice',
+    { minPrice: listOrderDto.minPrice, maxPrice: listOrderDto.maxPrice }
+  );
+}
+ else if (listOrderDto.minPrice !== undefined) {
+  queryBuilder.andWhere('order.total_price >= :minPrice', { minPrice: listOrderDto.minPrice });
+
+} else if (listOrderDto.maxPrice !== undefined) {
+  queryBuilder.andWhere('order.total_price <= :maxPrice', { maxPrice: listOrderDto.maxPrice });
+}
+
+
+
+
+
+
+  if (listOrderDto.product_name) {
+    queryBuilder.andWhere('product.name ILIKE :productName',{name:`%${listOrderDto.product_name}%`})
+    
+  }
+  const [orders,total] =await queryBuilder
+  .skip(skip)
+  .take(limit)
+  .orderBy('product.id', 'DESC')
+  .getManyAndCount();
+
+
+     const data = orders.map(order => plainToInstance(orderResponseDto, {
+         id: order?.id,
+         status: getOrderStatusKey(order?.status),
+         total_price: order?.total_price,
+         created_at: order
+           ? this.dataService.convertToJalali(order.created_at)
+           : null,
+         item: order?.items?.map((item: any) => ({
+           id: item.id,
+           price: item.price,
+           quantity: item.quantity,
+           product: {
+             id: item.product?.id,
+             name: item.product?.name,
+           },
+         })),
+       })
+     );
+
+
+
+  return paginate (data,total,page,limit)
+
+}
+
 }
