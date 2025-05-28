@@ -1,5 +1,5 @@
 import { Order } from "src/order/entities/order";
-import { AfterRemove, BeforeRemove, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {  Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Product } from '../../product/entities/product.entity';
 
 @Entity()
