@@ -41,11 +41,15 @@ import { OrderItem } from './order-item/entities/order-item';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 
+import { QueueModule } from './queue/queue.module';
+
+
 dotenv.config();
 @Module({
 
 
   imports: [
+  
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
@@ -88,6 +92,8 @@ dotenv.config();
     LogsModule,
     OrderModule,
     OrderItemModule,
+
+    QueueModule,
   
     ],
   controllers: [AppController, OrderItemController],
