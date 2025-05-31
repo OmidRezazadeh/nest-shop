@@ -18,6 +18,21 @@ export class MailService {
     });
   }
 
+  async sendOrderCreatedEmail(email:string, totalPrice:number){
+    await this.transporter.sendMail({
+      from: 'App Shop',
+      to: email,
+      subject: ' فاکتور ثبت شده',
+      text: `  مبلغ فاکتور شما ${totalPrice} `,
+
+    })
+  }
+
+
+
+
+
+
   async sendConfirmationEmail(email: string, confirmationCode: number) {
     await this.transporter.sendMail({
       from: 'App Shop',
@@ -36,4 +51,6 @@ export class MailService {
 
     });
   }
+
+
 }
