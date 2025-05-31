@@ -12,17 +12,25 @@ import { ListOrderDto } from './dto/list-order-dto';
 import { skip } from 'node:test';
 import { paginate } from 'src/utils/pagination';
 
+import { QueueService } from '../queue/queue.service';
+
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
+  
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+   
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
+    
     private readonly dataSource: DataSource,
     private readonly dataService: DateService,
+
+    private readonly queueService:QueueService
+
   ) {}
 
   async createByUserId(userId: number) {
@@ -43,7 +51,7 @@ export class OrderService {
         user: cart.user,
         total_price: cart.total_price,
       });
-const savedOrder = await queryRunner.manager.save(Order, order); // ✅ Save first
+       const savedOrder = await queryRunner.manager.save(Order, order); 
 
       for (const cartItem of cart.items) {
         const orderItem = queryRunner.manager.create(OrderItem, {
@@ -78,6 +86,10 @@ const savedOrder = await queryRunner.manager.save(Order, order); // ✅ Save fir
           },
         })),
       });
+       await this.queueService.sendNotification({email:cart.user.email, price:savedOrder.total_price});
+
+
+
 
       return orderResponse;
     } catch (error) {
