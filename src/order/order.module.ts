@@ -7,12 +7,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { Cart } from 'src/cart/entities/cart.entity';
 import { OrderItem } from 'src/order-item/entities/order-item';
 import { DateService } from 'src/date/date.service';
-
-import { QueueService } from 'src/queue/queue.service';
 import { QueueModule } from 'src/queue/queue.module';
+import { User } from 'src/user/entities/user.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Order,Cart,OrderItem]),
+  imports:[TypeOrmModule.forFeature([Order,Cart,OrderItem,User]),
   JwtModule.registerAsync({
     useFactory:()=>({
       secret: process.env.JWT_SECRET,
