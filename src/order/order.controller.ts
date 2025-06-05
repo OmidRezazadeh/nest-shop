@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
   Post,
+  Put,
   Query,
   Request,
   UseGuards,
@@ -40,10 +42,29 @@ export class OrderController {
   async getOrderById(@Request() request,  @Param('orderId') orderId: number){
      const userId = request.user.id;
     return await this.orderService.getUserOrderById(orderId,userId);
-
-
-      
-
 }
+/**
+ * Update the status of an order by admin.
+ * Only accessible by users with Admin role.
+ * @returns Success message if update is successful
+ */
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(ROLE_NAME.Admin) 
+@Put('update-status/:id')
+async updateOrderStatus(
+  @Param('id') id: number,
+  @Body('status') status: number
+) {
+    // Validate the order and new status
+    await this.orderService.validateOrderAndStatus(status, id);
+    // Update the order status
+    await this.orderService.update(status, id);
+    // Return success message
+    return {
+      "message": " وضعیت سفارش با موفقیت بروز رسانی شد"
+    }
+}
+
+
 
 }
