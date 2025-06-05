@@ -28,43 +28,48 @@ export class OrderController {
     return await this.orderService.createByUserId(userId);
   }
 
-
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(ROLE_NAME.Admin) 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE_NAME.Admin)
   @Get('list')
   async getAllOrders(@Query() listOrderDto: ListOrderDto) {
     return await this.orderService.list(listOrderDto);
   }
 
-
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async getOrderById(@Request() request,  @Param('orderId') orderId: number){
-     const userId = request.user.id;
-    return await this.orderService.getUserOrderById(orderId,userId);
-}
-/**
- * Update the status of an order by admin.
- * Only accessible by users with Admin role.
- * @returns Success message if update is successful
- */
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(ROLE_NAME.Admin) 
-@Put('update-status/:id')
-async updateOrderStatus(
-  @Param('id') id: number,
-  @Body('status') status: number
-) {
+  async getOrderById(@Request() request, @Param('orderId') orderId: number) {
+    const userId = request.user.id;
+    return await this.orderService.getUserOrderById(orderId, userId);
+  }
+  /**
+   * Update the status of an order by admin.
+   * Only accessible by users with Admin role.
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE_NAME.Admin)
+  @Put('update-status/:id')
+  async updateOrderStatus(
+    @Param('id') id: number,
+    @Body('status') status: number,
+  ) {
     // Validate the order and new status
     await this.orderService.validateOrderAndStatus(status, id);
     // Update the order status
     await this.orderService.update(status, id);
     // Return success message
     return {
-      "message": " وضعیت سفارش با موفقیت بروز رسانی شد"
-    }
-}
+      message: ' وضعیت سفارش با موفقیت بروز رسانی شد',
+    };
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE_NAME.Admin)
+  @Get('user-id/:user_id')
+  async getOrderByUserId(
+    @Param('user_id') userId: number,
+  ){
+    return await this.orderService.getOrderByUserId(userId);
 
 
-
+  }
 }

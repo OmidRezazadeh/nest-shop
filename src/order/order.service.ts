@@ -5,7 +5,10 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { Order } from './entities/order';
 import { OrderItem } from 'src/order-item/entities/order-item';
 import { plainToInstance } from 'class-transformer';
-import { getOrderStatusKey, ORDER_STATUS } from '../common/constants/order-status';
+import {
+  getOrderStatusKey,
+  ORDER_STATUS,
+} from '../common/constants/order-status';
 import { DateService } from '../date/date.service';
 import { orderResponseDto } from './dto/order-response-dto';
 import { ListOrderDto } from './dto/list-order-dto';
@@ -40,32 +43,61 @@ export class OrderService {
     private readonly queueService: QueueService,
   ) {}
 
-/**
- * Validates if the order exists and if the provided status is valid.
- * Throws NotFoundException if the order or status is invalid.
- */
-async validateOrderAndStatus(status: number, id: number) {
-  // Find the order by ID
-  const order = await this.orderRepository.findOne({ where: { id: id } });
-  if (!order) {
-    // Throw if order not found
-    throw new NotFoundException('سفارشی یافت نشد');
+  async getOrderByUserId(userId: number) {
+    const orders = await this.orderRepository.find({
+      where: {
+        user: { id: userId },
+        status: ORDER_STATUS.paid,
+      },
+      relations: ['items', 'items.product', 'user'],
+    });
+
+    return orders.map((order) =>
+      plainToInstance(orderResponseDto, {
+        id: order?.id,
+        status: getOrderStatusKey(order?.status),
+        total_price: order?.total_price,
+        created_at: order
+          ? this.dataService.convertToJalali(order.created_at)
+          : null,
+        item: order?.items?.map((item: any) => ({
+          id: item.id,
+          price: item.price,
+          quantity: item.quantity,
+          product: {
+            id: item.product?.id,
+            name: item.product?.name,
+          },
+        })),
+      }),
+    );
+  }
+  /**
+   * Validates if the order exists and if the provided status is valid.
+   * Throws NotFoundException if the order or status is invalid.
+   */
+  async validateOrderAndStatus(status: number, id: number) {
+    // Find the order by ID
+    const order = await this.orderRepository.findOne({ where: { id: id } });
+    if (!order) {
+      // Throw if order not found
+      throw new NotFoundException('سفارشی یافت نشد');
+    }
+
+    // Check if the status is valid using getOrderStatusKey
+    const isValidStatus = getOrderStatusKey(status);
+    if (isValidStatus === undefined) {
+      // Throw if status is invalid
+      throw new NotFoundException(' وضعیت وارد شده صحیح نیست');
+    }
   }
 
-  // Check if the status is valid using getOrderStatusKey
-  const isValidStatus = getOrderStatusKey(status);
-  if (isValidStatus === undefined) {
-    // Throw if status is invalid
-    throw new NotFoundException(" وضعیت وارد شده صحیح نیست");
+  /**
+   * Updates the status of an order.
+   */
+  async update(status: number, id: number) {
+    await this.orderRepository.update({ id: id }, { status: status });
   }
-}
-
-/**
- * Updates the status of an order.
- */
-async update(status: number, id: number) {
-  await this.orderRepository.update({ id: id }, { status: status });
-}
 
   /**
    * Get a specific order by ID for a user.
