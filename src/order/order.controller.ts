@@ -62,14 +62,16 @@ export class OrderController {
     };
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(ROLE_NAME.Admin)
-  @Get('user-id/:user_id')
-  async getOrderByUserId(
-    @Param('user_id') userId: number,
-  ){
-    return await this.orderService.getOrderByUserId(userId);
-
-
-  }
+/**
+ * Get all paid orders for a specific user by user ID.
+ * Only accessible by users with Admin role.
+ */
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(ROLE_NAME.Admin)
+@Get('user-id/:user_id')
+async getOrderByUserId(
+  @Param('user_id') userId: number,
+) {
+  return await this.orderService.getOrderByUserId(userId);
+}
 }
