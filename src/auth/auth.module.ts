@@ -46,6 +46,6 @@ import { Profile } from 'src/profile/entities/profile';
     JwtStrategy,
     GoogleStrategy
   ],
-  exports: [AuthService],
+  exports: [AuthService,JwtModule],
 })
 export class AuthModule {}
