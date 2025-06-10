@@ -34,7 +34,6 @@ import { UniqueProductIds } from './validators/unique-product-id.validator';
 import { LogsModule } from './logs/logs.module';
 import { Log } from './logs/entities/log.entity';
 import { OrderModule } from './order/order.module';
-import { OrderItemController } from './order-item/order-item.controller';
 import { OrderItemModule } from './order-item/order-item.module';
 import { Order } from './order/entities/order';
 import { OrderItem } from './order-item/entities/order-item';
@@ -91,12 +90,11 @@ dotenv.config();
     CartItemModule,
     LogsModule,
     OrderModule,
-    OrderItemModule,
-
     QueueModule,
+    OrderItemModule
   
     ],
-  controllers: [AppController, OrderItemController],
+  controllers: [AppController],
   providers: [
     AppService,IsUniqueConstraint, DateService,UniqueProductIds
   ],
