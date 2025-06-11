@@ -42,41 +42,41 @@ export class OrderService {
 
     private readonly queueService: QueueService,
   ) {}
-/**
- * Retrieve all paid orders for a specific user by user ID.
- * @returns An array of order response DTOs for the user's paid orders
- */
-async getOrderByUserId(userId: number) {
-  // Find all paid orders for the user, including related items and products
-  const orders = await this.orderRepository.find({
-    where: {
-      user: { id: userId },
-      status: ORDER_STATUS.paid,
-    },
-    relations: ['items', 'items.product', 'user'],
-  });
+  /**
+   * Retrieve all paid orders for a specific user by user ID.
+   * @returns An array of order response DTOs for the user's paid orders
+   */
+  async getOrderByUserId(userId: number) {
+    // Find all paid orders for the user, including related items and products
+    const orders = await this.orderRepository.find({
+      where: {
+        user: { id: userId },
+        status: ORDER_STATUS.paid,
+      },
+      relations: ['items', 'items.product', 'user'],
+    });
 
-  // Transform each order into the response DTO format
-  return orders.map((order) =>
-    plainToInstance(orderResponseDto, {
-      id: order?.id,
-      status: getOrderStatusKey(order?.status),
-      total_price: order?.total_price,
-      created_at: order
-        ? this.dataService.convertToJalali(order.created_at)
-        : null,
-      item: order?.items?.map((item: any) => ({
-        id: item.id,
-        price: item.price,
-        quantity: item.quantity,
-        product: {
-          id: item.product?.id,
-          name: item.product?.name,
-        },
-      })),
-    }),
-  );
-}
+    // Transform each order into the response DTO format
+    return orders.map((order) =>
+      plainToInstance(orderResponseDto, {
+        id: order?.id,
+        status: getOrderStatusKey(order?.status),
+        total_price: order?.total_price,
+        created_at: order
+          ? this.dataService.convertToJalali(order.created_at)
+          : null,
+        item: order?.items?.map((item: any) => ({
+          id: item.id,
+          price: item.price,
+          quantity: item.quantity,
+          product: {
+            id: item.product?.id,
+            name: item.product?.name,
+          },
+        })),
+      }),
+    );
+  }
 
   /**
    * Validates if the order exists and if the provided status is valid.
@@ -184,6 +184,7 @@ async getOrderByUserId(userId: number) {
     let MAX_LIMIT = Number(process.env.MAX_LIMIT) || 100;
     limit = Math.min(limit, MAX_LIMIT);
     const skip = (page - 1) * limit;
+
     const queryBuilder = this.orderRepository
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.items', 'items')
