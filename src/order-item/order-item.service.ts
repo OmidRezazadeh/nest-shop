@@ -175,41 +175,32 @@ export class OrderItemService {
     return paginate(data, total, page, limit);
   }
 
-  async validateOrderItemId(orderItemId: number, userId: number) {
-    const orderItem = await this.orderItemRepository.findOne({
-      where: { id: orderItemId },
-       relations: ['order', 'order.user'],
-    });
+async delete(orderItemId: number, userId: number): Promise<void> {
+  const orderItem = await this.orderItemRepository.findOne({
+    where: { id: orderItemId },
+    relations: ['order', 'order.user'],
+  });
 
-    if (!orderItem) {
-      throw new NotFoundException(' ایتمی یافت نشد');
-    }
-
-    if (orderItem.order.user.id !== userId) {
-      throw new ForbiddenException(' شما  مجاز به انجام این عملیات نیستید');
-    }
+  if (!orderItem) {
+    throw new NotFoundException('آیتمی یافت نشد');
   }
 
-  async delete(orderItemId: number) {
-    const orderItem = await this.orderItemRepository.findOne({
-      where: { id: orderItemId },
-      relations: ['order'],
-    });
-    if (!orderItem) {
-      throw new NotFoundException('ایتمی یافت نشد');
-    }
-
-    const orderId = orderItem.order.id;
-
-    const orderItemCount = await this.orderItemRepository.count({
-      where: { order: { id: orderId } },
-    });
-
-      await this.orderItemRepository.remove(orderItem);
-      
-    if (orderItemCount === 1) {
-      await this.orderRepository.delete({ id: orderId });
-    }
-  
+  if (orderItem.order.user.id !== userId) {
+    throw new ForbiddenException('شما مجاز به انجام این عملیات نیستید');
   }
+
+  const orderId = orderItem.order.id;
+
+  const orderItemCount = await this.orderItemRepository.count({
+    where: { order: { id: orderId } },
+  });
+
+  await this.orderItemRepository.remove(orderItem);
+
+  // If this was the last item, delete the order too
+  if (orderItemCount === 1) {
+    await this.orderRepository.delete(orderId);
+  }
+}
+
 }

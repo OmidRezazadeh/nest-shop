@@ -45,8 +45,7 @@ export class OrderItemController {
       @Request() request
 ) {
       const userId = request.user.id;
-      await this.orderItemService.validateOrderItemId(orderItemId,userId)
-     await this.orderItemService.delete(orderItemId);
+     await this.orderItemService.delete(orderItemId,userId);
      return {"message":" ایتم مورد نظر حذف شده "}
   }
 }
