@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { OrderItem } from './entities/order-item';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -127,7 +131,6 @@ export class OrderItemService {
       .createQueryBuilder('orderItem')
       .leftJoinAndSelect('orderItem.order', 'order')
       .leftJoinAndSelect('orderItem.product', 'product');
-      
 
     if (listOrderItemDto.order_id) {
       query.andWhere('orderItem.order_id  = :orderId', {
@@ -166,10 +169,47 @@ export class OrderItemService {
               name: orderItem.product.name,
             }
           : undefined,
-      })
+      }),
     );
 
     return paginate(data, total, page, limit);
+  }
 
+  async validateOrderItemId(orderItemId: number, userId: number) {
+    const orderItem = await this.orderItemRepository.findOne({
+      where: { id: orderItemId },
+       relations: ['order', 'order.user'],
+    });
+
+    if (!orderItem) {
+      throw new NotFoundException(' ایتمی یافت نشد');
+    }
+
+    if (orderItem.order.user.id !== userId) {
+      throw new ForbiddenException(' شما  مجاز به انجام این عملیات نیستید');
+    }
+  }
+
+  async delete(orderItemId: number) {
+    const orderItem = await this.orderItemRepository.findOne({
+      where: { id: orderItemId },
+      relations: ['order'],
+    });
+    if (!orderItem) {
+      throw new NotFoundException('ایتمی یافت نشد');
+    }
+
+    const orderId = orderItem.order.id;
+
+    const orderItemCount = await this.orderItemRepository.count({
+      where: { order: { id: orderId } },
+    });
+
+      await this.orderItemRepository.remove(orderItem);
+      
+    if (orderItemCount === 1) {
+      await this.orderRepository.delete({ id: orderId });
+    }
+  
   }
 }
