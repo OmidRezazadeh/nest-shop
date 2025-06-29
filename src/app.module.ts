@@ -41,6 +41,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 
 
 import { QueueModule } from './queue/queue.module';
+import { WalletService } from './wallet/wallet.service';
+import { WalletController } from './wallet/wallet.controller';
+import { WalletModule } from './wallet/wallet.module';
 
 
 dotenv.config();
@@ -91,12 +94,13 @@ dotenv.config();
     LogsModule,
     OrderModule,
     QueueModule,
-    OrderItemModule
+    OrderItemModule,
+    WalletModule
   
     ],
-  controllers: [AppController],
+  controllers: [AppController, WalletController],
   providers: [
-    AppService,IsUniqueConstraint, DateService,UniqueProductIds
+    AppService,IsUniqueConstraint, DateService,UniqueProductIds, WalletService
   ],
 })
 export class AppModule {}
