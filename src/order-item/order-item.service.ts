@@ -175,32 +175,51 @@ export class OrderItemService {
     return paginate(data, total, page, limit);
   }
 
-async delete(orderItemId: number, userId: number): Promise<void> {
-  const orderItem = await this.orderItemRepository.findOne({
-    where: { id: orderItemId },
-    relations: ['order', 'order.user'],
-  });
+  async delete(orderItemId: number, userId: number): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
 
-  if (!orderItem) {
-    throw new NotFoundException('آیتمی یافت نشد');
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const orderItem = await queryRunner.manager.findOne(OrderItem, {
+        where: { id: orderItemId },
+        relations: ['order', 'order.user'],
+      });
+
+      if (!orderItem) {
+        throw new NotFoundException('آیتمی یافت نشد');
+      }
+
+      if (orderItem.order.user.id !== userId) {
+        throw new ForbiddenException('شما مجاز به انجام این عملیات نیستید');
+      }
+
+      const orderId = orderItem.order.id;
+
+      const orderItemCount = await queryRunner.manager.count(OrderItem, {
+        where: { order: { id: orderId } },
+      });
+
+      const order = orderItem.order;
+      const orderItemTotalPrice = orderItem.price * orderItem.quantity;
+
+      order.total_price -= orderItemTotalPrice;
+
+      await queryRunner.manager.save(Order, order);
+
+      await queryRunner.manager.remove(OrderItem, orderItem);
+
+      if (orderItemCount === 1) {
+        await queryRunner.manager.delete(Order, orderId);
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
-
-  if (orderItem.order.user.id !== userId) {
-    throw new ForbiddenException('شما مجاز به انجام این عملیات نیستید');
-  }
-
-  const orderId = orderItem.order.id;
-
-  const orderItemCount = await this.orderItemRepository.count({
-    where: { order: { id: orderId } },
-  });
-
-  await this.orderItemRepository.remove(orderItem);
-
-  // If this was the last item, delete the order too
-  if (orderItemCount === 1) {
-    await this.orderRepository.delete(orderId);
-  }
-}
-
 }
