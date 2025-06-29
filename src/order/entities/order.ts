@@ -14,7 +14,7 @@ export class Order {
   @OneToMany(()=> OrderItem, item=>item.order,{cascade:true})
   items:OrderItem[]
 
-  @Column({ default: ORDER_STATUS.paid })
+  @Column({ default: ORDER_STATUS.pending })
   status: number;
 
   @Column()

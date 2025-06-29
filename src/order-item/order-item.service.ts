@@ -35,7 +35,7 @@ export class OrderItemService {
     const order = await this.orderRepository.findOne({
       where: {
         user: { id: userId },
-        status: ORDER_STATUS.paid,
+        status: ORDER_STATUS.pending,
         id: createOrderItemDto.order_id,
       },
     });
