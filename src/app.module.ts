@@ -39,32 +39,27 @@ import { Order } from './order/entities/order';
 import { OrderItem } from './order-item/entities/order-item';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
-
 import { QueueModule } from './queue/queue.module';
 import { WalletService } from './wallet/wallet.service';
 import { WalletController } from './wallet/wallet.controller';
 import { WalletModule } from './wallet/wallet.module';
-
+import { TransactionModule } from './transaction/transaction.module';
+import { Wallet } from './wallet/entities/wallet.entity';
+import { Transaction } from './transaction/entities/transaction.entity';
 
 dotenv.config();
 @Module({
-
-
   imports: [
-  
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          name: 'login', 
+          name: 'login',
           ttl: 60000,
           limit: 3,
         },
       ],
-    
-    
     }),
-
 
     ConfigModule.forRoot(),
     TypeOrmModule.forFeature([Log]),
@@ -75,10 +70,26 @@ dotenv.config();
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User,Role,Profile,confirmationCode,Photo,Tag,ProductTag,Product,Cart,CartItem,Log,Order,OrderItem], 
+      entities: [
+        User,
+        Role,
+        Profile,
+        confirmationCode,
+        Photo,
+        Tag,
+        ProductTag,
+        Product,
+        Cart,
+        CartItem,
+        Log,
+        Order,
+        OrderItem,
+        Wallet,
+        Transaction
+      ],
       synchronize: true,
-    }), 
-    UserModule, 
+    }),
+    UserModule,
     RoleModule,
     AuthModule,
     ProfileModule,
@@ -95,12 +106,16 @@ dotenv.config();
     OrderModule,
     QueueModule,
     OrderItemModule,
-    WalletModule
-  
-    ],
+    WalletModule,
+    TransactionModule,
+  ],
   controllers: [AppController, WalletController],
   providers: [
-    AppService,IsUniqueConstraint, DateService,UniqueProductIds, WalletService
+    AppService,
+    IsUniqueConstraint,
+    DateService,
+    UniqueProductIds,
+    WalletService,
   ],
 })
 export class AppModule {}
