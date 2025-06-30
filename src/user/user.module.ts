@@ -8,6 +8,7 @@ import { Photo } from 'src/upload/entities/photo.entity';
 import { UploadModule } from 'src/upload/upload.module';
 import { JwtModule } from '@nestjs/jwt';
 import { Profile } from 'src/profile/entities/profile';
+import { Wallet } from 'src/wallet/entities/wallet.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User,Photo,Profile]), 
