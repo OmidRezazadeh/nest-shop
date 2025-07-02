@@ -30,7 +30,10 @@ export class PaymentService {
     await queryRunner.startTransaction();
 
     try {
-      const transaction = await this.transactionService.findByAuthority(authority,queryRunner)
+      const transaction = await this.transactionService.findByAuthority(
+        authority,
+        queryRunner,
+      );
       if (status !== 'OK') {
         await this.transactionService.markAsFailed(transaction, queryRunner);
         await queryRunner.commitTransaction();
@@ -39,15 +42,53 @@ export class PaymentService {
 
       const result = await verify(authority, transaction.amount);
       if (result.status === 100) {
-        await this.transactionService.markAsSuccess(transaction,result.refId,queryRunner);
-        await this.walletService.markAsSuccess(transaction.wallet,queryRunner)
+        await this.transactionService.markAsSuccess(
+          transaction,
+          result.refId,
+          queryRunner,
+        );
+        await this.walletService.markAsSuccess(transaction.wallet, queryRunner);
         await queryRunner.commitTransaction();
-        return { message: 'شارژ  کیف پول با موفقیت انجام شد', refId: result.refId };
+        return {
+          message: 'شارژ  کیف پول با موفقیت انجام شد',
+          refId: result.refId,
+        };
       } else {
         await this.transactionService.markAsFailed(transaction, queryRunner);
         await queryRunner.commitTransaction();
         return { message: 'پرداخت ناموفق' };
       }
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(error);
+      throw new BadRequestException(' پرداخت با مشکل مواجه شد');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async charge(amount: number, userId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const wallet = await this.walletService.create(
+        queryRunner,
+        amount,
+        userId,
+      );
+      const result = await this.pay(wallet);
+      
+      const transactionData = {
+        user: { id: userId },
+        wallet: { id: wallet.id },
+        amount: wallet.amount,
+        authority: result.authority,
+        gateway: 'ZARINPAL',
+      };
+      await this.transactionService.create(queryRunner,transactionData );
+      await queryRunner.commitTransaction();
+      return result.url;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
