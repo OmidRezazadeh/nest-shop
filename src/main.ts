@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { NestExpressApplication } from '@nestjs/platform-express'; 
 
@@ -14,7 +14,9 @@ async function bootstrap() {
 
 
 
-  app.setGlobalPrefix('/api/v1');
+app.setGlobalPrefix('api/v1', {
+  exclude: [{ path: 'paycallback', method: RequestMethod.GET }],
+});
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

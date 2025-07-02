@@ -46,6 +46,8 @@ import { WalletModule } from './wallet/wallet.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { Wallet } from './wallet/entities/wallet.entity';
 import { Transaction } from './transaction/entities/transaction.entity';
+import { PaymentService } from './payment/payment.service';
+import { PaymentModule } from './payment/payment.module';
 
 dotenv.config();
 @Module({
@@ -108,6 +110,7 @@ dotenv.config();
     OrderItemModule,
     WalletModule,
     TransactionModule,
+    PaymentModule,
   ],
   controllers: [AppController, WalletController],
   providers: [
@@ -116,6 +119,7 @@ dotenv.config();
     DateService,
     UniqueProductIds,
     WalletService,
+    PaymentService,
   ],
 })
 export class AppModule {}
