@@ -28,6 +28,7 @@ export class PaymentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
     try {
       const transaction = await queryRunner.manager.findOne(Transaction, {
         where: { authority },
@@ -39,6 +40,7 @@ export class PaymentService {
       if (status !== 'OK') {
         transaction.status = PaymentStatus.FAILED;
         await queryRunner.manager.save(Transaction, transaction);
+        await queryRunner.commitTransaction();
         return { message: 'پرداخت لغو شد' };
       }
 
@@ -53,11 +55,12 @@ export class PaymentService {
         const wallet = transaction.wallet;
         wallet.status = WalletStatus.SUCCESS;
         await queryRunner.manager.save(Wallet, wallet);
-
+        await queryRunner.commitTransaction();
         return { message: 'شارژ موفق', refId: result.refId };
       } else {
         transaction.status = PaymentStatus.FAILED;
         await queryRunner.manager.save(Transaction, transaction);
+        
         await queryRunner.commitTransaction();
         return { message: 'پرداخت ناموفق' };
       }
