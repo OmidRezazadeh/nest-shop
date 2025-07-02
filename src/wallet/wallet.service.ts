@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Wallet, WalletStatus, WalletType } from './entities/wallet.entity';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class WalletService {
@@ -17,6 +17,11 @@ export class WalletService {
       type: WalletType.DEPOSIT,
     });
     return await queryRunner.manager.save(Wallet,wallet);
+  }
+  async markAsSuccess(wallet:Wallet,queryRunner:QueryRunner){
+    wallet.status = WalletStatus.SUCCESS;
+    await queryRunner.manager.save(Wallet, wallet);
+  
   }
 
 }

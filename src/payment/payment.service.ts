@@ -11,13 +11,13 @@ import {
   NotFoundException,
 } from 'src/common/constants/custom-http.exceptions';
 import { Wallet, WalletStatus } from 'src/wallet/entities/wallet.entity';
+import { TransactionService } from 'src/transaction/transaction.service';
+import { WalletService } from 'src/wallet/wallet.service';
 @Injectable()
 export class PaymentService {
   constructor(
-    @InjectRepository(Transaction)
-    private readonly transactionRepository: Repository<Transaction>,
-    @InjectRepository(Wallet)
-    private readonly walletRepository: Repository<Wallet>,
+    private readonly transactionService: TransactionService,
+    private readonly walletService: WalletService,
     private readonly dataSource: DataSource,
   ) {}
   async pay(paymentData: any) {
@@ -30,37 +30,21 @@ export class PaymentService {
     await queryRunner.startTransaction();
 
     try {
-      const transaction = await queryRunner.manager.findOne(Transaction, {
-        where: { authority },
-        relations: ['wallet'],
-      });
-
-      if (!transaction) throw new NotFoundException('تراکنش یافت نشد');
-
+      const transaction = await this.transactionService.findByAuthority(authority,queryRunner)
       if (status !== 'OK') {
-        transaction.status = PaymentStatus.FAILED;
-        await queryRunner.manager.save(Transaction, transaction);
+        await this.transactionService.markAsFailed(transaction, queryRunner);
         await queryRunner.commitTransaction();
         return { message: 'پرداخت لغو شد' };
       }
 
       const result = await verify(authority, transaction.amount);
-
       if (result.status === 100) {
-        transaction.status = PaymentStatus.SUCCESS;
-        transaction.ref_id = result.refId;
-        transaction.verified_at = new Date();
-        await queryRunner.manager.save(Transaction, transaction);
-
-        const wallet = transaction.wallet;
-        wallet.status = WalletStatus.SUCCESS;
-        await queryRunner.manager.save(Wallet, wallet);
+        await this.transactionService.markAsSuccess(transaction,result.refId,queryRunner);
+        await this.walletService.markAsSuccess(transaction.wallet,queryRunner)
         await queryRunner.commitTransaction();
-        return { message: 'شارژ موفق', refId: result.refId };
+        return { message: 'شارژ  کیف پول با موفقیت انجام شد', refId: result.refId };
       } else {
-        transaction.status = PaymentStatus.FAILED;
-        await queryRunner.manager.save(Transaction, transaction);
-        
+        await this.transactionService.markAsFailed(transaction, queryRunner);
         await queryRunner.commitTransaction();
         return { message: 'پرداخت ناموفق' };
       }
