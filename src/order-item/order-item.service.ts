@@ -31,6 +31,14 @@ export class OrderItemService {
     private readonly dataSource: DataSource,
   ) {}
 
+  async checkQuantityByOrderId(orderId:number) {
+    const orderItems = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['orderItems'],
+    });
+    console.log(orderItems)
+  }
+
   async validate(createOrderItemDto: CreateOrderItemDto, userId: number) {
     const order = await this.orderRepository.findOne({
       where: {
