@@ -24,10 +24,9 @@ export class WalletController {
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
   @Post('/charge')
   async charge(@Body() body: { amount: number }, @Request() request) {
-    
-
     const userId = request.user.id;
     const paymentUrl = await this.paymentService.charge(body.amount, userId);
     return { url: paymentUrl };
   }
+  
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Wallet, WalletStatus, WalletType } from './entities/wallet.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateWalletDto } from './dto/create-wallet-dto';
 @Injectable()
 export class WalletService {
   constructor(
@@ -9,19 +10,42 @@ export class WalletService {
     private readonly walletRepository: Repository<Wallet>,
   ) {}
 
-  async create(queryRunner,amount: number, userId: number) {
-    const wallet = queryRunner.manager.create(Wallet,{
-      amount: amount,
+  async createWithDraw(
+    userId: number,
+    totalPrice: number,
+    queryRunner: QueryRunner,
+  ) {
+    const wallet = queryRunner.manager.create(Wallet, {
       user: { id: userId },
-      status: WalletStatus.PENDING,
-      type: WalletType.DEPOSIT,
+      amount: totalPrice,
+      type: WalletType.WITHDRAW,
+      status: WalletStatus.SUCCESS,
     });
-    return await queryRunner.manager.save(Wallet,wallet);
+    return await queryRunner.manager.save(Wallet, wallet);
   }
-  async markAsSuccess(wallet:Wallet,queryRunner:QueryRunner){
-    wallet.status = WalletStatus.SUCCESS;
-    await queryRunner.manager.save(Wallet, wallet);
-  
+  async create(queryRunner: QueryRunner,walletData:CreateWalletDto) {
+    const wallet = queryRunner.manager.create(Wallet, {
+      amount: walletData.amount,
+      user: { id: walletData.userId },
+      status: walletData.status,
+      type: walletData.type,
+    });
+    return await queryRunner.manager.save(Wallet, wallet);
+  }
+  async checkWalletBalance(userId: number) {
+    const balance = await this.walletRepository
+      .createQueryBuilder('wallet')
+      .where('wallet.userId= :userId', { userId })
+      .andWhere('wallet.status= :status', { status: WalletStatus.SUCCESS })
+      .andWhere('wallet.type=:type', { type: WalletType.DEPOSIT })
+      .select('SUM(wallet.amount)', 'totalAmount')
+      .getRawOne();
+    const totalAmount = parseFloat(balance.totalAmount) || 0;
+    return totalAmount;
   }
 
+  async markAsSuccess(wallet: Wallet, queryRunner: QueryRunner) {
+    wallet.status = WalletStatus.SUCCESS;
+    await queryRunner.manager.save(Wallet, wallet);
+  }
 }
