@@ -138,7 +138,7 @@ async create(cartDto: any, userId: number) {
     });
 
     // Convert the cart entity to a DTO using class-transformer
-    const cartResponse = plainToInstance(
+    return plainToInstance(
       CartResponseDto,
       {
         id: fullCart?.id,
@@ -162,8 +162,7 @@ async create(cartDto: any, userId: number) {
       { excludeExtraneousValues: true }, // Only include fields defined in CartResponseDto
     );
 
-    // Return the cart as a formatted response
-    return cartResponse;
+    
 
   } catch (error) {
     // If any error occurs during transaction, rollback all DB operations
@@ -198,7 +197,7 @@ async getCartByUserId(userId: number) {
   }
 
   // Transform the raw cart entity into a response DTO using class-transformer
-  const cartResponse = plainToInstance(
+  return plainToInstance(
     CartResponseDto,
     {
       id: cart?.id,
@@ -224,8 +223,7 @@ async getCartByUserId(userId: number) {
     { excludeExtraneousValues: true }, // Ensure only properties defined in DTO are included
   );
 
-  // Return the formatted cart response
-  return cartResponse;
+
 }
 
 

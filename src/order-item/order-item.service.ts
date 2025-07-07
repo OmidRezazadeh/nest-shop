@@ -224,7 +224,7 @@ export class OrderItemService {
         where: { order: { id: orderId } },
       });
 
-      const order = orderItem.order;
+      const {order} = orderItem;
       const orderItemTotalPrice = orderItem.price * orderItem.quantity;
 
       order.total_price -= orderItemTotalPrice;
