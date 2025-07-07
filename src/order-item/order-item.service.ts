@@ -32,11 +32,26 @@ export class OrderItemService {
   ) {}
 
   async checkQuantityByOrderId(orderId:number) {
-    const orderItems = await this.orderRepository.findOne({
+
+    const order = await this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ['orderItems'],
+      relations: ['items','items.product'], 
     });
-    console.log(orderItems)
+    if (!order) {
+      throw new NotFoundException(' سفارشی یافت نشد')
+    }
+  
+        for(  const orderItem of order.items  ){
+          if(orderItem.quantity>orderItem.product.quantity ){
+              throw new BadRequestException(` تعداد کالا ${orderItem.product.name} موجود نیست `)
+          }
+          
+
+        }
+    // const orderItems = order.items.map((item: any) => ({
+    //   quantity: item.quantity,
+    //    const product =
+    // }));
   }
 
   async validate(createOrderItemDto: CreateOrderItemDto, userId: number) {
@@ -64,7 +79,7 @@ export class OrderItemService {
       throw new BadRequestException(' تعداد محصول کمتر از تعداد درخواستی است ');
     }
   }
-
+ 
   async create(createOrderItemDto: CreateOrderItemDto) {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
