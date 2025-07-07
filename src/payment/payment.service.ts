@@ -1,25 +1,58 @@
 import { Injectable } from '@nestjs/common';
 import { pay, verify } from '../utils/zarinPal';
-import { InjectRepository } from '@nestjs/typeorm';
-import {
-  PaymentStatus,
-  Transaction,
-} from 'src/transaction/entities/transaction.entity';
-import { Repository, DataSource } from 'typeorm';
 import {
   BadRequestException,
   NotFoundException,
 } from 'src/common/constants/custom-http.exceptions';
-import { Wallet, WalletStatus } from 'src/wallet/entities/wallet.entity';
+import {
+  WalletStatus,
+  WalletType,
+} from 'src/wallet/entities/wallet.entity';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { WalletService } from 'src/wallet/wallet.service';
+import { payOrderDto } from 'src/order/dto/pay-order-dto';
+import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
+import { DataSource } from 'typeorm';
+
+
+
 @Injectable()
 export class PaymentService {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly walletService: WalletService,
-    private readonly dataSource: DataSource,
+     private readonly dataSource:DataSource
+
   ) {}
+
+
+  
+  // async payOrder(order: any, payOrderDto: payOrderDto, userId: number) {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
+
+  //   try {
+      
+
+
+  //   //       //  await this.orderItemService.checkQuantityByOrderId(order.id)
+
+  //       const walletData:CreateWalletDto={
+  //         amount: totalPrice,
+  //         userId,
+  //         status: WalletStatus.SUCCESS,
+  //         type: WalletType.WITHDRAW,
+  //       }
+  //       await this.walletService.create(queryRunner, walletData);
+  //       await this.orderService.updateStatus(order.id,ORDER_STATUS.paid,queryRunner)
+  //   //     await this.cartService.deleteByUserIdAfterPay(userId,queryRunner)
+ 
+  //     } else {
+  //     }
+  //   } catch (error) {}
+  // }
+
   async pay(paymentData: any) {
     return await pay(paymentData);
   }
@@ -72,13 +105,16 @@ export class PaymentService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const wallet = await this.walletService.create(
-        queryRunner,
+
+      const  walletData:CreateWalletDto= {
         amount,
         userId,
-      );
+        status: WalletStatus.PENDING,
+        type: WalletType.DEPOSIT,
+      };
+      const wallet = await this.walletService.create(queryRunner, walletData);
       const result = await this.pay(wallet);
-      
+
       const transactionData = {
         user: { id: userId },
         wallet: { id: wallet.id },
@@ -86,7 +122,7 @@ export class PaymentService {
         authority: result.authority,
         gateway: 'ZARINPAL',
       };
-      await this.transactionService.create(queryRunner,transactionData );
+      await this.transactionService.create(queryRunner, transactionData);
       await queryRunner.commitTransaction();
       return result.url;
     } catch (error) {
@@ -97,4 +133,5 @@ export class PaymentService {
       await queryRunner.release();
     }
   }
+
 }
