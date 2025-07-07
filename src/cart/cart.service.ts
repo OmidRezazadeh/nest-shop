@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from './entities/cart.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { DateService } from '../date/date.service';
 import { CartItem } from '../cart-item/entities/cart-item.entity';
 import { Product } from '../product/entities/product.entity';
@@ -273,5 +273,26 @@ async deleteByUserId(userId: number) {
   await this.logsService.log('سبد خرید با موفقیت حذف شد', 'CartService');
 
 }
+async deleteByUserIdAfterPay(userId: number, queryRunner: QueryRunner) {
+  const cart = await this.findByUserId(userId);
+
+  if (!cart) {
+    await this.logsService.log(
+      `سبد خریدی برای کاربر با شناسه ${userId} یافت نشد. عملیات حذف انجام نشد.`,
+      'CartService',
+    );
+    return;
+  }
+
+  await queryRunner.manager.delete(Cart, { user: { id: userId } });
+
+  await this.logsService.log(
+    `سبد خرید کاربر با شناسه ${userId} با موفقیت حذف شد.`,
+    'CartService',
+  );
+}
+
+
+
 
 }

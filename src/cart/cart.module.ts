@@ -29,5 +29,6 @@ import { cartListener } from './cart.listener';
   ],
   providers: [CartService, DateService, RedisService, CartItemService,LogsService,cartListener],
   controllers: [CartController],
+  exports: [CartService],
 })
 export class CartModule {}
