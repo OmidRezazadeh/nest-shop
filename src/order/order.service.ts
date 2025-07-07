@@ -12,15 +12,13 @@ import {
 import { DateService } from '../date/date.service';
 import { orderResponseDto } from './dto/order-response-dto';
 import { ListOrderDto } from './dto/list-order-dto';
-import { skip } from 'node:test';
 import { paginate } from 'src/utils/pagination';
-
 import { QueueService } from '../queue/queue.service';
-import { tryCatch } from 'bullmq';
 import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 import { User } from 'src/user/entities/user.entity';
 import { ROLE_NAME } from 'src/common/constants/role-name';
 import { ForbiddenException } from 'src/common/constants/custom-http.exceptions';
+
 
 @Injectable()
 export class OrderService {
@@ -39,9 +37,31 @@ export class OrderService {
 
     private readonly dataSource: DataSource,
     private readonly dataService: DateService,
-
     private readonly queueService: QueueService,
+
   ) {}
+  async updateStatus(
+    orderId: number,
+    status: number,
+    queryRunner: QueryRunner,
+  ) {
+    await queryRunner.manager.update(
+      Order,
+      { id: orderId },
+      { status: status },
+    );
+  }
+
+  async getOrder(orderId: number, userId: number) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId, user: { id: userId } },
+    });
+    if (!order) {
+      throw new NotFoundException('سفارشی یافت نشد');
+    }
+    return order;
+  }
+
   /**
    * Retrieve all paid orders for a specific user by user ID.
    * @returns An array of order response DTOs for the user's paid orders
