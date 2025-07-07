@@ -69,7 +69,7 @@ export class AuthController {
 
      const confirmationCode = randomInt(100000, 999999);
 
-     const email= user.email
+     const {email} = user
      await this.confirmationCodeService.create(email,confirmationCode)
     await this.mailService.sendConfirmationEmail(email,confirmationCode)
     
