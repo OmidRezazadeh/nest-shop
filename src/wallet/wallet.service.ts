@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Wallet, WalletStatus, WalletType } from './entities/wallet.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -40,12 +40,20 @@ export class WalletService {
       .andWhere('wallet.type=:type', { type: WalletType.DEPOSIT })
       .select('SUM(wallet.amount)', 'totalAmount')
       .getRawOne();
-    const totalAmount = parseFloat(balance.totalAmount) || 0;
-    return totalAmount;
+     return parseFloat(balance.totalAmount) || 0;
+
+    
   }
 
   async markAsSuccess(wallet: Wallet, queryRunner: QueryRunner) {
     wallet.status = WalletStatus.SUCCESS;
     await queryRunner.manager.save(Wallet, wallet);
   }
+
+ async validateWalletBalance(userId:number,totalPrice:number){
+  const balance = await this.checkWalletBalance(userId);
+  if (totalPrice >= balance) {
+    throw new NotFoundException('  مبلغ کیف پول کافی نیست ');
+  }
+ }
 }
