@@ -28,6 +28,8 @@ import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
 import { WalletStatus, WalletType } from 'src/wallet/entities/wallet.entity';
 import { ORDER_STATUS } from 'src/common/constants/order-status';
 import { CartService } from 'src/cart/cart.service';
+import { pay, verify } from '../utils/zarinPal';
+import { TransactionService } from 'src/transaction/transaction.service';
 
 @Controller('order')
 export class OrderController {
@@ -37,6 +39,7 @@ export class OrderController {
     private readonly orderItemService: OrderItemService,
     private readonly walletService: WalletService,
     private readonly cartService: CartService,
+    private readonly transactionService:TransactionService
   ) {}
 
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
@@ -52,25 +55,38 @@ export class OrderController {
     try {
       const userId = request.user.id;
       const order = await this.orderService.getOrder(orderId, userId);
-
+      await this.orderItemService.checkQuantityByOrderId(orderId);  
+      const walletData: CreateWalletDto = {
+        amount: order.total_price,
+        userId,
+        status: WalletStatus.SUCCESS,
+        type: WalletType.WITHDRAW
+      };
       if (payOrderDto.paymentMethod === PaymentMethod.WALLET) {
-        await this.orderItemService.checkQuantityByOrderId(orderId);  
         await this.walletService.validateWalletBalance(userId,order.total_price);
-        const walletData: CreateWalletDto = {
-          amount: order.total_price,
-          userId,
-          status: WalletStatus.SUCCESS,
-          type: WalletType.WITHDRAW
-        };
          await this.walletService.create(queryRunner, walletData);
         await this.orderService.updateStatus(order.id,ORDER_STATUS.paid,queryRunner);
         await this.cartService.deleteByUserIdAfterPay(userId, queryRunner);
         await queryRunner.commitTransaction();
         return{"message": " خرید با موفقیت انجام شد"}
       }else{
-
-      }
+        const wallet=  await this.walletService.create(queryRunner,walletData)
         
+        const result = await pay(order);
+     
+          const transactionData = {
+            user: { id: userId },
+            wallet: { id: wallet.id },
+            amount: wallet.amount,
+            authority: result.authority,
+            gateway: 'ZARINPAL',
+            order:{id:order.id}
+          };
+          await this.transactionService.create(queryRunner, transactionData);
+          await queryRunner.commitTransaction();
+          return result.url;
+      }
+ 
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

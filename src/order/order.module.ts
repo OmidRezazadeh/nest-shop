@@ -16,10 +16,12 @@ import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { CartService } from 'src/cart/cart.service';
 import { Log } from 'src/logs/entities/log.entity';
 import { LogsService } from 'src/logs/logs.service';
+import { TransactionService } from 'src/transaction/transaction.service';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Order,Cart,OrderItem,User,Product,Wallet,Log]),
+  imports:[TypeOrmModule.forFeature([Order,Cart,OrderItem,User,Product,Wallet,Log,Transaction]),
   JwtModule.registerAsync({
     useFactory:()=>({
       secret: process.env.JWT_SECRET,
@@ -28,7 +30,7 @@ import { LogsService } from 'src/logs/logs.service';
   }),
   QueueModule,
 ],
-  providers: [OrderService,DateService,OrderItemService,WalletService,CartService,LogsService],
+  providers: [OrderService,DateService,OrderItemService,WalletService,CartService,LogsService,TransactionService],
   controllers: [OrderController],
   exports: [OrderService], 
 })
