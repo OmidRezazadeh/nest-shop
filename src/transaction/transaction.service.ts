@@ -16,13 +16,21 @@ export class TransactionService {
       Transaction,
       transactionData,
     );
-    await queryRunner.manager.save(Transaction, transaction);
+  await queryRunner.manager.save(Transaction, transaction);
   }
 
   async findByAuthority(authority: string, queryRunner: QueryRunner) {
     const transaction = await queryRunner.manager.findOne(Transaction, {
       where: { authority },
-      relations: ['wallet'],
+      relations: [    
+        'wallet',
+        'user',
+        'order',
+        'order.items',
+        'order.items.product',
+        'order.items.product.orderItems',
+        'order.items.product.orderItems.order',
+      ],
     });
     if (!transaction) {
       throw new NotFoundException('تراکنش یافت نشد');
