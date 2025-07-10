@@ -19,9 +19,10 @@ JwtModule.registerAsync({
     signOptions: { expiresIn: process.env.JWT_EXPIRES_IN }
   })
 }),
+forwardRef(() => PaymentModule),
 ],
   controllers: [WalletController],
-  providers: [WalletService,TransactionService,PaymentService],
+  providers: [WalletService,TransactionService],
   exports: [WalletService,TypeOrmModule],
 })
 export class WalletModule {}
