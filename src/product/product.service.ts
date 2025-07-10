@@ -38,6 +38,9 @@ export class ProductService {
     private readonly redisService: RedisService,
   ) {}
 
+  async updateQuantity(productId:number,quantity:number,queryRunner:QueryRunner){
+    await queryRunner.manager.update(Product,{id:productId},{quantity:quantity})
+  }
   async update(id:number, editProductDto:EditProductDto){
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -351,6 +354,8 @@ export class ProductService {
 
     return products;
   }
+
+
 
    
  async searchProducts(

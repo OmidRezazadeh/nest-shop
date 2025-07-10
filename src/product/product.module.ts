@@ -22,7 +22,7 @@ import { RedisService } from 'src/redis/redis.service';
 ],
   controllers: [ProductController],
   providers: [ProductService, UploadService,DateService,RedisService],
-  exports: [TypeOrmModule]
+  exports: [TypeOrmModule,ProductService]
 })
 export class ProductModule {
   
