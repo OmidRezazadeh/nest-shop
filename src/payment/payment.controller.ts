@@ -9,7 +9,9 @@ export class PaymentController {
   async handlePaymentCallback(
     @Query('Authority') authority: string,
     @Query('Status') status: string,
+
   ) {
+   
     return this.paymentService.verifyPayment(authority, status);
   }
 }

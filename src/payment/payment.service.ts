@@ -12,50 +12,28 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { WalletService } from 'src/wallet/wallet.service';
 import { payOrderDto } from 'src/order/dto/pay-order-dto';
 import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { ORDER_STATUS } from 'src/common/constants/order-status';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Order } from 'src/order/entities/order';
+import { CartService } from 'src/cart/cart.service';
+import { OrderService } from '../order/order.service';
+import { ProductService } from '../product/product.service';
+
 
 
 
 @Injectable()
 export class PaymentService {
   constructor(
-    private readonly transactionService: TransactionService,
+    private readonly  transactionService: TransactionService,
     private readonly walletService: WalletService,
-     private readonly dataSource:DataSource
+     private readonly dataSource:DataSource,
+     private readonly cartService: CartService,
+     private readonly orderService:OrderService, 
+     private readonly productService:ProductService
 
   ) {}
-
-
-  
-  // async payOrder(order: any, payOrderDto: payOrderDto, userId: number) {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   await queryRunner.connect();
-  //   await queryRunner.startTransaction();
-
-  //   try {
-      
-
-
-  //   //       //  await this.orderItemService.checkQuantityByOrderId(order.id)
-
-  //       const walletData:CreateWalletDto={
-  //         amount: totalPrice,
-  //         userId,
-  //         status: WalletStatus.SUCCESS,
-  //         type: WalletType.WITHDRAW,
-  //       }
-  //       await this.walletService.create(queryRunner, walletData);
-  //       await this.orderService.updateStatus(order.id,ORDER_STATUS.paid,queryRunner)
-  //   //     await this.cartService.deleteByUserIdAfterPay(userId,queryRunner)
- 
-  //     } else {
-  //     }
-  //   } catch (error) {}
-  // }
-
-  async pay(paymentData: any) {
-    return await pay(paymentData);
-  }
 
   async verifyPayment(authority: string, status: string) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -67,6 +45,7 @@ export class PaymentService {
         authority,
         queryRunner,
       );
+
       if (status !== 'OK') {
         await this.transactionService.markAsFailed(transaction, queryRunner);
         await queryRunner.commitTransaction();
@@ -80,10 +59,25 @@ export class PaymentService {
           result.refId,
           queryRunner,
         );
+        if(transaction.wallet.type=== WalletType.WITHDRAW){
+
+          await this.orderService.updateStatus(transaction.order.id,ORDER_STATUS.paid,queryRunner);
+          await this.cartService.deleteByUserIdAfterPay(transaction.user.id, queryRunner);
+
+          for (const item of transaction.order.items) {
+            const {quantity}= item.product;
+           const itemQuantity = quantity - item.quantity
+           await this.productService.updateQuantity(item.product.id,itemQuantity,queryRunner);
+
+          }
+        
+        }
+         
+
         await this.walletService.markAsSuccess(transaction.wallet, queryRunner);
         await queryRunner.commitTransaction();
         return {
-          message: 'شارژ  کیف پول با موفقیت انجام شد',
+          message: ' پرداخت با موفقیت انجام شد',
           refId: result.refId,
         };
       } else {
@@ -99,6 +93,11 @@ export class PaymentService {
       await queryRunner.release();
     }
   }
+
+  async pay(paymentData: any) {
+    return await pay(paymentData);
+  }
+
 
   async charge(amount: number, userId: number) {
     const queryRunner = this.dataSource.createQueryRunner();
