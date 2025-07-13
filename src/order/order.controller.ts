@@ -17,18 +17,15 @@ import { ListOrderDto } from './dto/list-order-dto';
 import { RolesGuard } from 'src/guards/Role/role/role.guard';
 import { CheckVerifiedGuard } from 'src/guards/check-verfied/check-verified.guard';
 import { payOrderDto } from './dto/pay-order-dto';
-
 import { DataSource } from 'typeorm';
-
 import { OrderItemService } from 'src/order-item/order-item.service';
 import { WalletService } from '../wallet/wallet.service';
 import { PaymentMethod } from '../common/constants/payment-method.enum';
-import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
 import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
 import { WalletStatus, WalletType } from 'src/wallet/entities/wallet.entity';
 import { ORDER_STATUS } from 'src/common/constants/order-status';
 import { CartService } from 'src/cart/cart.service';
-import { pay, verify } from '../utils/zarinPal';
+import { pay } from '../utils/zarinPal';
 import { TransactionService } from 'src/transaction/transaction.service';
 
 @Controller('order')
@@ -42,6 +39,25 @@ export class OrderController {
     private readonly transactionService:TransactionService
   ) {}
 
+@UseGuards(JwtAuthGuard)
+@Get('user-purchase')
+ async purchase(@Request() request, @Query() listOrderDto: ListOrderDto){
+ const  userId = request.user.id;
+    return await this.orderService.getPurchaseByUserId(userId,listOrderDto)
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+ 
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
   @Post('/:id/pay')
   async pay(

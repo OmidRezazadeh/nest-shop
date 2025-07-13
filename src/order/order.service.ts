@@ -40,6 +40,9 @@ export class OrderService {
     private readonly queueService: QueueService,
 
   ) {}
+
+
+
   async updateStatus(
     orderId: number,
     status: number,
@@ -96,6 +99,8 @@ export class OrderService {
         })),
       }),
     );
+
+
   }
 
   /**
@@ -272,6 +277,48 @@ export class OrderService {
     return paginate(data, total, page, limit);
   }
 
+  async getPurchaseByUserId(userId: number, listOrderDto: ListOrderDto) {
+    const page = Number(listOrderDto.page) || 1;
+    let limit = Number(listOrderDto.limit) || 10;
+    const MAX_LIMIT = Number(process.env.MAX_LIMIT) || 100;
+    limit = Math.min(limit, MAX_LIMIT);
+    const skip = (page - 1) * limit;
+  
+    const queryBuilder = this.orderRepository.createQueryBuilder('order')
+      .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
+      .leftJoinAndSelect('order.user', 'user')
+      .where('user.id = :userId', { userId })
+      .andWhere('order.status = :status', { status: ORDER_STATUS.paid })
+      .orderBy('order.id', 'DESC')
+      .skip(skip)
+      .take(limit);
+  
+    const [orders, total] = await queryBuilder.getManyAndCount();
+  
+    const data = orders.map((order) =>
+      plainToInstance(orderResponseDto, {
+        id: order?.id,
+        status: getOrderStatusKey(order?.status),
+        total_price: order?.total_price,
+        created_at: order
+          ? this.dataService.convertToJalali(order.created_at)
+          : null,
+        item: order?.items?.map((item: any) => ({
+          id: item.id,
+          price: item.price,
+          quantity: item.quantity,
+          product: {
+            id: item.product?.id,
+            name: item.product?.name,
+          },
+        })),
+      }),
+    );
+  
+    return paginate(data, total, page, limit);
+  }
+  
   /**
    * Format order and items for API response.
    */
@@ -281,10 +328,12 @@ export class OrderService {
       status: getOrderStatusKey(order.status),
       total_price: order.total_price,
       created_at: this.dataService.convertToJalali(order.created_at),
+      
       items: cartItems.map((cartItem) => ({
         id: cartItem.id,
         price: cartItem.quantity * cartItem.price,
         quantity: cartItem.quantity,
+
         product: {
           id: cartItem.product.id,
           name: cartItem.product.name,
