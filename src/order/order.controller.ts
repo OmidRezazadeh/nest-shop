@@ -62,7 +62,9 @@ export class OrderController {
     
       const userId = request.user.id;
       const order = await this.orderService.getOrder(orderId, userId);
+  
       await this.orderItemService.checkQuantityByOrderId(orderId);  
+
       const walletData = {
         amount: order.total_price,
         userId,

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from 'src/cart/entities/cart.entity';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
@@ -62,8 +62,13 @@ export class OrderService {
     if (!order) {
       throw new NotFoundException('سفارشی یافت نشد');
     }
+    if (order.status === ORDER_STATUS.paid ) {
+      throw new BadRequestException(' این سفارش قبلا پرداخت شده ')
+   }
     return order;
   }
+
+  
 
   /**
    * Retrieve all paid orders for a specific user by user ID.
