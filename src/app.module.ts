@@ -38,7 +38,6 @@ import { OrderItemModule } from './order-item/order-item.module';
 import { Order } from './order/entities/order';
 import { OrderItem } from './order-item/entities/order-item';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-
 import { QueueModule } from './queue/queue.module';
 import { WalletService } from './wallet/wallet.service';
 import { WalletController } from './wallet/wallet.controller';
@@ -48,10 +47,13 @@ import { Wallet } from './wallet/entities/wallet.entity';
 import { Transaction } from './transaction/entities/transaction.entity';
 import { PaymentService } from './payment/payment.service';
 import { PaymentModule } from './payment/payment.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { OrderCleanupService } from './jobs/order-cleanup/order-cleanup.service';
 
 dotenv.config();
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
@@ -120,6 +122,7 @@ dotenv.config();
     UniqueProductIds,
     WalletService,
     PaymentService,
+    OrderCleanupService,
   ],
 })
 export class AppModule {}
