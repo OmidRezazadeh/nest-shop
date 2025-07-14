@@ -4,7 +4,7 @@ import {
   Post,
   UseGuards,
   Request,
-  Get
+  Get,
 } from '@nestjs/common';
 import { CheckVerifiedGuard } from 'src/guards/check-verfied/check-verified.guard';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
@@ -12,7 +12,6 @@ import { WalletService } from './wallet.service';
 import { PaymentService } from '../payment/payment.service';
 import { TransactionService } from '../transaction/transaction.service';
 import { DataSource } from 'typeorm';
-
 
 @Controller('wallet')
 export class WalletController {
@@ -29,12 +28,13 @@ export class WalletController {
     const paymentUrl = await this.paymentService.charge(body.amount, userId);
     return { url: paymentUrl };
   }
+  
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
   @Get('balance')
-  async checkWalletBalance(@Request() request){
-    const userId = request.user.id; 
-       const totalBalance= await this.walletService.checkWalletBalance(userId);
-        return {"total_balance":totalBalance}
-      }
-  
+  async checkWalletBalance(@Request() request) {
+    const userId = request.user.id;
+    const totalBalance = await this.walletService.getWalletBalance(userId);
+    return { total_balance: totalBalance };
+  }
+
 }

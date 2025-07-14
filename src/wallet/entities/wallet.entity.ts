@@ -19,6 +19,7 @@ export enum WalletStatus {
 export enum WalletType {
   DEPOSIT = 0,
   WITHDRAW = 1,
+  WITHDRAWAL_TARGET_WALLET=2
 }
 
 @Entity('wallets')

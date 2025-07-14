@@ -41,21 +41,11 @@ export class OrderController {
 
 @UseGuards(JwtAuthGuard)
 @Get('user-purchase')
+
  async purchase(@Request() request, @Query() listOrderDto: ListOrderDto){
- const  userId = request.user.id;
+    const  userId = request.user.id;
     return await this.orderService.getPurchaseByUserId(userId,listOrderDto)
  }
-
-
-
-
-
-
-
-
-
-
-
 
  
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
@@ -69,24 +59,27 @@ export class OrderController {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+    
       const userId = request.user.id;
       const order = await this.orderService.getOrder(orderId, userId);
       await this.orderItemService.checkQuantityByOrderId(orderId);  
-      const walletData: CreateWalletDto = {
+      const walletData = {
         amount: order.total_price,
         userId,
         status: WalletStatus.SUCCESS,
-        type: WalletType.WITHDRAW
       };
+      let walletPayload: CreateWalletDto;
       if (payOrderDto.paymentMethod === PaymentMethod.WALLET) {
         await this.walletService.validateWalletBalance(userId,order.total_price);
-         await this.walletService.create(queryRunner, walletData);
+        walletPayload  ={... walletData, type: WalletType.WITHDRAWAL_TARGET_WALLET} 
+        await this.walletService.create(queryRunner, walletPayload);
         await this.orderService.updateStatus(order.id,ORDER_STATUS.paid,queryRunner);
         await this.cartService.deleteByUserIdAfterPay(userId, queryRunner);
         await queryRunner.commitTransaction();
         return{"message": " خرید با موفقیت انجام شد"}
       }else{
-        const wallet=  await this.walletService.create(queryRunner,walletData)
+        walletPayload  ={... walletData, type: WalletType.WITHDRAW} 
+        const wallet=  await this.walletService.create(queryRunner,walletPayload)
         
         const result = await pay(order);
      

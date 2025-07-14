@@ -3,6 +3,7 @@ import { Wallet, WalletStatus, WalletType } from './entities/wallet.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateWalletDto } from './dto/create-wallet-dto';
+import { PaymentStatus } from 'src/transaction/entities/transaction.entity';
 @Injectable()
 export class WalletService {
   constructor(
@@ -32,18 +33,33 @@ export class WalletService {
     });
     return await queryRunner.manager.save(Wallet, wallet);
   }
-  async checkWalletBalance(userId: number) {
+  async getWalletBalance(userId: number) {
     const balance = await this.walletRepository
       .createQueryBuilder('wallet')
-      .where('wallet.userId= :userId', { userId })
-      .andWhere('wallet.status= :status', { status: WalletStatus.SUCCESS })
-      .andWhere('wallet.type=:type', { type: WalletType.DEPOSIT })
-      .select('SUM(wallet.amount)', 'totalAmount')
+      .select(
+        `SUM(CASE WHEN wallet.type = CAST(:depositType AS wallets_type_enum) THEN wallet.amount ELSE 0 END)`,
+        'totalDeposit'
+      )
+      .addSelect(
+        `SUM(CASE WHEN wallet.type = CAST(:withdrawType AS wallets_type_enum) THEN wallet.amount ELSE 0 END)`,
+        'totalWithdraw'
+      )
+      .where('wallet.userId = :userId', { userId })
+      .andWhere('wallet.status = :status', { status: WalletStatus.SUCCESS })
+      .setParameters({
+        depositType: WalletType.DEPOSIT,   // usually 0
+        withdrawType: WalletType.WITHDRAWAL_TARGET_WALLET, 
+      })
       .getRawOne();
-     return parseFloat(balance.totalAmount) || 0;
-
+  
+    const totalDeposit = parseFloat(balance.totalDeposit) || 0;
+    const totalWithdraw = parseFloat(balance.totalWithdraw) || 0;
+  
+    return Math.max(totalDeposit - totalWithdraw, 0); 
     
   }
+  
+  
 
   async markAsSuccess(wallet: Wallet, queryRunner: QueryRunner) {
     wallet.status = WalletStatus.SUCCESS;
@@ -51,7 +67,7 @@ export class WalletService {
   }
 
  async validateWalletBalance(userId:number,totalPrice:number){
-  const balance = await this.checkWalletBalance(userId);
+  const balance = await this.getWalletBalance(userId);
   if (totalPrice >= balance) {
     throw new NotFoundException('  مبلغ کیف پول کافی نیست ');
   }
