@@ -22,11 +22,12 @@ import { OrderItemService } from 'src/order-item/order-item.service';
 import { WalletService } from '../wallet/wallet.service';
 import { PaymentMethod } from '../common/constants/payment-method.enum';
 import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
-import { WalletStatus, WalletType } from 'src/wallet/entities/wallet.entity';
 import { ORDER_STATUS } from 'src/common/constants/order-status';
 import { CartService } from 'src/cart/cart.service';
 import { pay } from '../utils/zarinPal';
 import { TransactionService } from 'src/transaction/transaction.service';
+import { WalletStatus } from 'src/common/constants/wallet-status';
+import { WalletType } from 'src/common/constants/wallet-type';
 
 @Controller('order')
 export class OrderController {
