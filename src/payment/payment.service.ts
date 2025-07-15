@@ -1,24 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { pay, verify } from '../utils/zarinPal';
 import {
-  BadRequestException,
-  NotFoundException,
+  BadRequestException
 } from 'src/common/constants/custom-http.exceptions';
-import {
-  WalletStatus,
-  WalletType,
-} from 'src/wallet/entities/wallet.entity';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { WalletService } from 'src/wallet/wallet.service';
-import { payOrderDto } from 'src/order/dto/pay-order-dto';
 import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
 import { DataSource, Repository } from 'typeorm';
 import { ORDER_STATUS } from 'src/common/constants/order-status';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from 'src/order/entities/order';
 import { CartService } from 'src/cart/cart.service';
 import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
+import { WalletStatus } from 'src/common/constants/wallet-status';
+import { WalletType } from 'src/common/constants/wallet-type';
 
 
 
