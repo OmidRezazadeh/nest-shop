@@ -1,13 +1,8 @@
+import { PaymentStatus } from 'src/common/constants/transaction-status';
 import { Order } from 'src/order/entities/order';
 import { User } from 'src/user/entities/user.entity';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-
-export enum PaymentStatus {
-  PENDING = 0,
-  SUCCESS = 1,
-  FAILED = 2,
-}
 
 @Entity('transactions')
 export class Transaction {

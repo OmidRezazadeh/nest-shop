@@ -9,18 +9,10 @@ import {
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Transaction } from 'src/transaction/entities/transaction.entity';
+import { WalletStatus } from 'src/common/constants/wallet-status';
+import { WalletType } from 'src/common/constants/wallet-type';
 
-export enum WalletStatus {
-  PENDING = 0,
-  SUCCESS = 1,
-  FAILED = 2,
-}
 
-export enum WalletType {
-  DEPOSIT = 0,
-  WITHDRAW = 1,
-  WITHDRAWAL_TARGET_WALLET=2
-}
 
 @Entity('wallets')
 export class Wallet {

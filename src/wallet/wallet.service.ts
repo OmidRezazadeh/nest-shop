@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Wallet, WalletStatus, WalletType } from './entities/wallet.entity';
+import { Wallet } from './entities/wallet.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateWalletDto } from './dto/create-wallet-dto';
-import { PaymentStatus } from 'src/transaction/entities/transaction.entity';
+import { WalletStatus } from 'src/common/constants/wallet-status';
+import { WalletType } from 'src/common/constants/wallet-type';
 @Injectable()
 export class WalletService {
   constructor(

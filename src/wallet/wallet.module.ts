@@ -7,9 +7,10 @@ import { WalletService } from './wallet.service';
 import { JwtModule } from '@nestjs/jwt';
 import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { TransactionService } from 'src/transaction/transaction.service';
-import { PaymentService } from 'src/payment/payment.service';
-import { TransactionModule } from 'src/transaction/transaction.module';
 import { PaymentModule } from 'src/payment/payment.module';
+import { TransactionModule } from 'src/transaction/transaction.module';
+
+
 
 @Module({
 imports:[TypeOrmModule.forFeature([Wallet,User,Transaction]),
@@ -20,9 +21,11 @@ JwtModule.registerAsync({
   })
 }),
 forwardRef(() => PaymentModule),
+TransactionModule,
+
 ],
   controllers: [WalletController],
-  providers: [WalletService,TransactionService],
+  providers: [WalletService],
   exports: [WalletService,TypeOrmModule],
 })
 export class WalletModule {}
