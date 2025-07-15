@@ -1,6 +1,8 @@
 
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { WalletStatus, WalletType } from '../entities/wallet.entity';
+
+import { WalletStatus } from 'src/common/constants/wallet-status';
+import { WalletType } from 'src/common/constants/wallet-type';
 
 export class CreateWalletDto {
   @IsNumber()
