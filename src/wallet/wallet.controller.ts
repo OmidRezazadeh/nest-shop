@@ -36,5 +36,6 @@ export class WalletController {
     const totalBalance = await this.walletService.getWalletBalance(userId);
     return { total_balance: totalBalance };
   }
+  
 
 }
