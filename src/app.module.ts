@@ -49,6 +49,7 @@ import { PaymentService } from './payment/payment.service';
 import { PaymentModule } from './payment/payment.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OrderCleanupService } from './jobs/order-cleanup/order-cleanup.service';
+import { DateModule } from './date/date.module';
 
 dotenv.config();
 @Module({
@@ -113,6 +114,7 @@ dotenv.config();
     WalletModule,
     TransactionModule,
     PaymentModule,
+    DateModule,
   ],
   controllers: [AppController, WalletController],
   providers: [
