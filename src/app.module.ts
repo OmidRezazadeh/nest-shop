@@ -50,6 +50,9 @@ import { PaymentModule } from './payment/payment.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OrderCleanupService } from './jobs/order-cleanup/order-cleanup.service';
 import { DateModule } from './date/date.module';
+import { ChatGateway } from './chat/chat.gateway';
+import { ChatService } from './chat/chat.service';
+import { ChatModule } from './chat/chat.module';
 
 dotenv.config();
 @Module({
@@ -115,6 +118,7 @@ dotenv.config();
     TransactionModule,
     PaymentModule,
     DateModule,
+    ChatModule,
   ],
   controllers: [AppController, WalletController],
   providers: [
@@ -125,6 +129,8 @@ dotenv.config();
     WalletService,
     PaymentService,
     OrderCleanupService,
+    ChatGateway,
+    ChatService,
   ],
 })
 export class AppModule {}
