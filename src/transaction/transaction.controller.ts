@@ -16,4 +16,5 @@ export class TransactionController {
         const userId= request.user.id;
        return await this.transactionService.getUserWalletHistory(userId)
     }
+    
 }
