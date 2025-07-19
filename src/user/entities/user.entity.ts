@@ -16,6 +16,8 @@ import {
 } from 'typeorm';
 import { Wallet } from 'src/wallet/entities/wallet.entity';
 import { Transaction } from 'src/transaction/entities/transaction.entity';
+import { Conversation } from 'src/chat/entities/Conversation.entity';
+
 
 @Entity('users')
 export class User {
@@ -64,6 +66,13 @@ export class User {
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions: Transaction[];
+
+  @OneToMany(() => Conversation, (conversation) => conversation.user)
+  conversations: Conversation[];
+
+
+  @OneToMany(() => Conversation, (conversation) => conversation.admin)
+  assignedConversations: Conversation[];
 
   @CreateDateColumn()
   createdAt: Date;
