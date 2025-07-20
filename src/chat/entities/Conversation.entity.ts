@@ -8,6 +8,8 @@ export class Conversation  {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: false })
+  isClosed: boolean;
 
   @ManyToOne(() => User, (user) => user.conversations)
   user: User;
