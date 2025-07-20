@@ -53,6 +53,8 @@ import { DateModule } from './date/date.module';
 import { ChatGateway } from './chat/chat.gateway';
 import { ChatService } from './chat/chat.service';
 import { ChatModule } from './chat/chat.module';
+import { Conversation } from './chat/entities/Conversation.entity';
+import { Message } from './chat/entities/Message.entity';
 
 dotenv.config();
 @Module({
@@ -93,7 +95,9 @@ dotenv.config();
         Order,
         OrderItem,
         Wallet,
-        Transaction
+        Transaction,
+        Conversation,
+        Message
       ],
       synchronize: true,
     }),
