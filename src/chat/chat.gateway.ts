@@ -31,14 +31,20 @@ export class ChatGateway {
 
     try {
       const messageData = await this.chatService.saveMessageUser(userId,messageDto);
-      console.log(`[Message Received] UserID: ${userId}, Message: ${messageDto.message}, Time: ${new Date().toISOString()}`);
+      console.log('Socket ID:', client.id);
+      this.logger.log(`Message received: ${messageDto.message} by user ${userId}`);
 
-      this.server.emit('data',messageData);
+      this.server.emit('message',messageData);
     } catch (error) {
       console.log(error);
     }
   }
+
+
+  
+
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
+
 }

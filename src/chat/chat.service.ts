@@ -11,41 +11,38 @@ import { Conversation } from './entities/Conversation.entity';
 export class ChatService {
   constructor(private readonly dataSource: DataSource) {}
   async saveMessageUser(userId: number, messageDto: MessageDto) {
-   
-   const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+    const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-   const user = await queryRunner.manager.findOne(User, {
-      where: { id: userId }
-   });
-   if (!user) {
+    const user = await queryRunner.manager.findOne(User, {
+      where: { id: userId },
+    });
+    if (!user) {
       throw new NotFoundException('کاربری یافت نشد');
     }
     try {
-
-    
-      const conversation = await queryRunner.manager.findOne(Conversation, {
-         where: { user: { id: userId }, isClosed: false },
+      let conversation = await queryRunner.manager.findOne(Conversation, {
+        where: { user: { id: userId }, isClosed: false },
       });
-      let messageData: any;
+
       if (!conversation) {
-        const saveConversation = queryRunner.manager.create(Conversation, {
+        conversation = queryRunner.manager.create(Conversation, {
           user: { id: userId },
         });
-
-        await queryRunner.manager.save(Conversation, saveConversation);
-        const message = queryRunner.manager.create(Message, {
-          content: messageDto.message,
-          sender: user,
-          conversation: saveConversation,
-        });
-
-        messageData = await queryRunner.manager.save(Message,message);
-      } else {
-
-        return { message: 'ok' };
+        conversation = await queryRunner.manager.save(
+          Conversation,
+          conversation,
+        );
       }
+      const message = queryRunner.manager.create(Message, {
+        content: messageDto.message,
+        sender: user,
+        conversation: { id: conversation.id },
+      });
+      
+      const messageData = await queryRunner.manager.save(Message, message);
+
       await queryRunner.commitTransaction();
       return messageData;
     } catch (error) {

@@ -133,8 +133,7 @@ dotenv.config();
     WalletService,
     PaymentService,
     OrderCleanupService,
-    ChatGateway,
-    ChatService,
+
   ],
 })
 export class AppModule {}
