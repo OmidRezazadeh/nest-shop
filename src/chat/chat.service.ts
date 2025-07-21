@@ -1,15 +1,19 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { MessageDto } from './dto/message.dto';
-
-import { QueryRunner, DataSource } from 'typeorm';
+import { QueryRunner, DataSource, Repository, IsNull } from 'typeorm';
 import { Message } from './entities/Message.entity';
 import { User } from 'src/user/entities/user.entity';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
 import { Conversation } from './entities/Conversation.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    @InjectRepository(Conversation)
+    private conversationRepository:Repository<Conversation>,
+  ) {}
   async saveMessageUser(userId: number, messageDto: MessageDto) {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -40,7 +44,7 @@ export class ChatService {
         sender: user,
         conversation: { id: conversation.id },
       });
-      
+
       const messageData = await queryRunner.manager.save(Message, message);
 
       await queryRunner.commitTransaction();
@@ -52,5 +56,17 @@ export class ChatService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async getUserConversations() {
+    
+  const  convetsation=   await this.conversationRepository.find({
+      where: {
+        admin: IsNull(),
+      },
+      order: { id: 'DESC' },
+    });
+    console.log(convetsation);
+    return convetsation
   }
 }

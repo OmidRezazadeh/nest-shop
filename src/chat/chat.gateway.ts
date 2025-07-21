@@ -5,9 +5,9 @@ import {
   ConnectedSocket,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+
 import { Injectable, Logger, UseGuards } from '@nestjs/common';
-import { Server } from 'http';
+import { Socket, Server } from 'socket.io'; 
 import { ChatService } from './chat.service';
 import { WsJwtGuard } from './guards/auth.guard';
 import { MessageDto } from './dto/message.dto';
@@ -40,8 +40,22 @@ export class ChatGateway {
     }
   }
 
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('getConversations')
+  async handleGetConversationList(
+    @ConnectedSocket() client: Socket,
+  ){
+    const userId = client.data.id;
 
-  
+     try {
+        const conversations= await this.chatService.getUserConversations();
+        this.server.to(`user_${userId}`).emit('conversationList', conversations);
+     } catch (error) {
+      console.log(error)
+     }
+  }
+
+
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
