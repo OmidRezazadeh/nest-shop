@@ -64,6 +64,7 @@ export class ChatService {
       where: {
         admin: IsNull(),
       },
+    relations:['user','messages'],
       order: { id: 'DESC' },
     });
     console.log(convetsation);
