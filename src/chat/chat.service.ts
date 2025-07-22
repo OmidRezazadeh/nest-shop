@@ -6,13 +6,14 @@ import { User } from 'src/user/entities/user.entity';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
 import { Conversation } from './entities/Conversation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AnswerMessageDto } from './dto/answer-message.dto';
 
 @Injectable()
 export class ChatService {
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(Conversation)
-    private conversationRepository:Repository<Conversation>,
+    private conversationRepository: Repository<Conversation>,
   ) {}
   async saveMessageUser(userId: number, messageDto: MessageDto) {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
@@ -59,15 +60,48 @@ export class ChatService {
   }
 
   async getUserConversations() {
-    
-  const  convetsation=   await this.conversationRepository.find({
+    const conversation = await this.conversationRepository.find({
       where: {
         admin: IsNull(),
       },
-    relations:['user','messages'],
+      relations: ['user', 'messages'],
       order: { id: 'DESC' },
     });
-    console.log(convetsation);
-    return convetsation
+
+    return conversation;
+  }
+
+  async answerConversationById(
+    answerMessageDto: AnswerMessageDto,
+    admin: any,
+  ) {
+    const conversation = await this.conversationRepository.findOne({
+      where: { id: answerMessageDto.conversationId },
+    });
+    if (!conversation) {
+      throw new NotFoundException('گفتگویی یافت نشد');
+    }
+    const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      conversation.admin = admin;
+      await queryRunner.manager.save(Conversation, conversation);
+
+      const message = queryRunner.manager.create(Message, {
+        sender: admin,
+        conversation: { id: answerMessageDto.conversationId },
+        content: answerMessageDto.message,
+      });
+      await queryRunner.manager.save(Message, message);
+      await queryRunner.commitTransaction();
+  return message;
+    }catch (error) {
+      console.error('❌ Error in answerConversationById:', error);
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

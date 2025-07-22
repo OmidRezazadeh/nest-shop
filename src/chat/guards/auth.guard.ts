@@ -11,9 +11,10 @@ export class WsJwtGuard implements CanActivate{
 
     constructor(private readonly jwtService:JwtService){}
     canActivate(context: ExecutionContext): boolean  {
+        
         const client:Socket = context.switchToWs().getClient();
         const token =this.extractToken(client)
-
+ 
         if (!token) {
             this.logger.error('No token provided')
             throw new WsException('No token provided')
