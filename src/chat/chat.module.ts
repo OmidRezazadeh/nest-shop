@@ -8,11 +8,12 @@ import { JwtService } from '@nestjs/jwt';
 import { WsJwtGuard } from './guards/auth.guard';
 import { ChatService } from './chat.service';
 import { User } from 'src/user/entities/user.entity';
+import { DateService } from 'src/date/date.service';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Conversation,Message,User])],
   controllers: [ChatController],
-  providers:[ChatGateway,JwtService,WsJwtGuard,ChatService],
+  providers:[ChatGateway,JwtService,WsJwtGuard,ChatService,DateService],
   exports: [ChatService],
 })
 export class ChatModule {}

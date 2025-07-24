@@ -7,6 +7,10 @@ import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
 import { Conversation } from './entities/Conversation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AnswerMessageDto } from './dto/answer-message.dto';
+import { plainToInstance } from 'class-transformer';
+import { clientMessageDto } from './dto/client-message.dto';
+import { DateService } from 'src/date/date.service';
+import { ChatDto } from './dto/chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -14,6 +18,7 @@ export class ChatService {
     private readonly dataSource: DataSource,
     @InjectRepository(Conversation)
     private conversationRepository: Repository<Conversation>,
+    private readonly dataService: DateService,
   ) {}
   async saveMessageUser(userId: number, messageDto: MessageDto) {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
@@ -46,10 +51,17 @@ export class ChatService {
         conversation: { id: conversation.id },
       });
 
-      const messageData = await queryRunner.manager.save(Message, message);
+     await queryRunner.manager.save(Message, message);
+      if (!conversation) {
+        throw new NotFoundException(' گفتگوی یافت نشد');
+      }
 
+      const result = queryRunner.manager.findOne(Message, {
+        where: { id: message.id },
+        relations: ['conversation', 'conversation.user', 'conversation.admin'],
+      });
       await queryRunner.commitTransaction();
-      return messageData;
+      return result;
     } catch (error) {
       console.log(error);
       await queryRunner.rollbackTransaction();
@@ -58,25 +70,51 @@ export class ChatService {
       await queryRunner.release();
     }
   }
-
+  // return plainToInstance(clientMessageDto,{
+  //   message:messageData.content,
+  //   id:messageData.id,
+  //   created_at: this.dataService.convertToJalali(messageData.createdAt),
+  //   conversation_id:messageData.conversation.id,
+  //   user:{
+  //     first_name:messageData.sender.first_name,
+  //     last_name:messageData.sender.last_name,
+  //     id:messageData.sender.id
+  //   }
+  // })
   async getUserConversations() {
-    const conversation = await this.conversationRepository.find({
+    return await this.conversationRepository.find({
       where: {
         admin: IsNull(),
       },
       relations: ['user', 'messages'],
       order: { id: 'DESC' },
     });
-
-    return conversation;
   }
+  async conversationById(chatDto: ChatDto, userId: number) {
+    const conversation =await this.conversationRepository
+      .createQueryBuilder('conversation')
+      .where('conversation.id = :conversationId', {
+        conversationId: chatDto.conversationId,
+      })
+      .andWhere('conversation.isClosed = false')
+      .andWhere(
+        '(conversation.userId = :userId OR conversation.adminId = :userId)',
+        { userId },
+      )
+      .leftJoinAndSelect('conversation.messages', 'messages')
+      .leftJoinAndSelect('conversation.user', 'user')
+      .leftJoinAndSelect('conversation.admin', 'admin')
+      .getOne();
 
-  async answerConversationById(
-    answerMessageDto: AnswerMessageDto,
-    admin: any,
-  ) {
+    if (!conversation) {
+      throw new NotFoundException(' شما اجازه دسترسی به این چت را ندارید');
+    }
+    return conversation
+  }
+  async answerConversationById(answerMessageDto: AnswerMessageDto, admin: any) {
     const conversation = await this.conversationRepository.findOne({
       where: { id: answerMessageDto.conversationId },
+      relations: ['user', 'admin'],
     });
     if (!conversation) {
       throw new NotFoundException('گفتگویی یافت نشد');
@@ -94,14 +132,37 @@ export class ChatService {
         content: answerMessageDto.message,
       });
       await queryRunner.manager.save(Message, message);
+
+      const messageData = queryRunner.manager.findOne(Message, {
+        where: { id: message.id },
+        relations: [
+          'conversation',
+          'conversation.user',
+          'sender',
+          'conversation.admin',
+        ],
+      });
       await queryRunner.commitTransaction();
-  return message;
-    }catch (error) {
+      return messageData;
+    } catch (error) {
       console.error('❌ Error in answerConversationById:', error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async findConversationById(conversationId: number) {
+    return this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['user', 'admin'],
+    });
+  }
+  async getConversationWithAdmin(conversationId: number) {
+    const conversation = this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['admin'],
+    });
   }
 }
