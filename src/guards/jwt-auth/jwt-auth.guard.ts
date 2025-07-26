@@ -10,7 +10,7 @@ export class JwtAuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
-      throw new UnauthorizedException('No token provided');
+      throw new UnauthorizedException('توکن معتبر نیست ');
     }
 
     try {
