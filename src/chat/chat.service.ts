@@ -11,6 +11,7 @@ import { plainToInstance } from 'class-transformer';
 import { clientMessageDto } from './dto/client-message.dto';
 import { DateService } from 'src/date/date.service';
 import { ChatDto } from './dto/chat.dto';
+import { ConversationDto } from './dto/conversation.dto';
 
 @Injectable()
 export class ChatService {
@@ -51,14 +52,19 @@ export class ChatService {
         conversation: { id: conversation.id },
       });
 
-     await queryRunner.manager.save(Message, message);
+      await queryRunner.manager.save(Message, message);
       if (!conversation) {
         throw new NotFoundException(' گفتگوی یافت نشد');
       }
 
       const result = queryRunner.manager.findOne(Message, {
         where: { id: message.id },
-        relations: ['conversation', 'conversation.user', 'conversation.admin'],
+        relations: [
+          'conversation',
+          'sender',
+          'conversation.user',
+          'conversation.admin',
+        ],
       });
       await queryRunner.commitTransaction();
       return result;
@@ -70,17 +76,22 @@ export class ChatService {
       await queryRunner.release();
     }
   }
-  // return plainToInstance(clientMessageDto,{
-  //   message:messageData.content,
-  //   id:messageData.id,
-  //   created_at: this.dataService.convertToJalali(messageData.createdAt),
-  //   conversation_id:messageData.conversation.id,
-  //   user:{
-  //     first_name:messageData.sender.first_name,
-  //     last_name:messageData.sender.last_name,
-  //     id:messageData.sender.id
-  //   }
-  // })
+  formatMessageResponse(messageData: any) {
+    if (!messageData) {
+      throw new NotFoundException(' پیامی یافت نشد');
+    }
+    return plainToInstance(clientMessageDto, {
+      message: messageData.content,
+      id: messageData.id,
+      created_at: this.dataService.convertToJalali(messageData.createdAt),
+      conversation_id: messageData.conversation.id,
+      user: {
+        id: messageData.sender.id,
+        first_name: messageData.sender.first_name,
+        last_name: messageData.sender.last_name,
+      },
+    });
+  }
   async getUserConversations() {
     return await this.conversationRepository.find({
       where: {
@@ -91,7 +102,7 @@ export class ChatService {
     });
   }
   async conversationById(chatDto: ChatDto, userId: number) {
-    const conversation =await this.conversationRepository
+    const conversation = await this.conversationRepository
       .createQueryBuilder('conversation')
       .where('conversation.id = :conversationId', {
         conversationId: chatDto.conversationId,
@@ -104,12 +115,35 @@ export class ChatService {
       .leftJoinAndSelect('conversation.messages', 'messages')
       .leftJoinAndSelect('conversation.user', 'user')
       .leftJoinAndSelect('conversation.admin', 'admin')
+    
       .getOne();
 
     if (!conversation) {
       throw new NotFoundException(' شما اجازه دسترسی به این چت را ندارید');
     }
-    return conversation
+
+    return plainToInstance(ConversationDto, {
+      id: conversation.id,
+      admin: conversation.admin
+        ? {
+            id: conversation.admin.id,
+            first_name: conversation.admin.first_name,
+            last_name: conversation.admin.last_name,
+          }
+        : null,
+
+      user: {
+        id: conversation.user.id,
+        first_name: conversation.user.first_name,
+        last_name: conversation.user.last_name,
+      },
+      messages: conversation.messages.map((message: Message) => ({
+        id: message.id,
+        content: message.content,
+        created_at: this.dataService.convertToJalali(message.createdAt),
+      })),
+      created_at: this.dataService.convertToJalali(conversation.created_at),
+    });
   }
   async answerConversationById(answerMessageDto: AnswerMessageDto, admin: any) {
     const conversation = await this.conversationRepository.findOne({
