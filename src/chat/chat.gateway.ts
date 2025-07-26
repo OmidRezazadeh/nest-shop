@@ -56,17 +56,14 @@ export class ChatGateway {
         userId,
         messageDto,
       );
-      this.logger.log(
-        `Message received: ${messageDto.message} by user ${userId}`,
-      );
+      this.logger.log(`Message received: ${messageDto.message} by user ${userId}`);
 
-      const conversationId = messageData?.conversation.id;
 
-     
+        const formattedMessage = this.chatService.formatMessageResponse(messageData);
+        client.join(`conversation_${messageData?.conversation.id}`);
       this.server
-        .to(`conversation_${conversationId}`)
-        .emit('message', messageData);
-        this.server.emit('message', messageData)
+        .to(`conversation_${messageData?.conversation.id}`)
+        .emit('message', formattedMessage);
     } catch (error) {
       console.log(error);
     }
