@@ -193,10 +193,4 @@ export class ChatService {
       relations: ['user', 'admin'],
     });
   }
-  async getConversationWithAdmin(conversationId: number) {
-    const conversation = this.conversationRepository.findOne({
-      where: { id: conversationId },
-      relations: ['admin'],
-    });
-  }
 }
