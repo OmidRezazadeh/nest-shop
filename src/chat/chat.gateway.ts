@@ -6,19 +6,18 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import { Body, Injectable, Logger, Param, UseGuards } from '@nestjs/common';
+import { Injectable, Logger, UseFilters, UseGuards } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { ChatService } from './chat.service';
 import { WsJwtGuard } from './guards/auth.guard';
 import { MessageDto } from './dto/message.dto';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { ROLE_NAME } from 'src/common/constants/role-name';
-import { RolesGuard } from 'src/guards/Role/role/role.guard';
 import { AnswerMessageDto } from './dto/answer-message.dto';
 import { AdminRolesGuard } from './guards/adminRole.guard';
 import { ChatDto } from './dto/chat.dto';
+import { WsAllExceptionsFilter } from './ws-exception/ws-exception.filter';
 
 @WebSocketGateway({ namespace: 'chat' })
+@UseFilters(new WsAllExceptionsFilter())
 @Injectable()
 export class ChatGateway {
   @WebSocketServer()
@@ -26,7 +25,31 @@ export class ChatGateway {
 
   private readonly logger = new Logger(ChatGateway.name);
   constructor(private readonly chatService: ChatService) {}
-  
+  @UseGuards(WsJwtGuard, AdminRolesGuard)
+  @SubscribeMessage('answerConversation')
+  async handleAnswerConversation(
+    @ConnectedSocket() client: Socket,
+
+    @MessageBody() answerMessageDto: AnswerMessageDto,
+  ) {
+    try {
+      const admin = client.data;
+      const messageData = await this.chatService.answerConversationById(
+        answerMessageDto,
+        admin,
+      );
+      const formattedMessage = this.chatService.formatMessageResponse(messageData);
+      const conversationId = messageData?.conversation.id;
+      client.join(`conversation_${conversationId}`);
+      this.server
+        .to(`conversation_${conversationId}`)
+        .emit('answerMessage', formattedMessage);
+      } catch (error) {
+        this.logger.error('Error in handleAnswerConversation:', error.message);
+        client.emit('error', { message: error.message });
+    }
+  }
+
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('getChat')
   async handleGetChat(
@@ -69,29 +92,7 @@ export class ChatGateway {
     }
   }
   
-  @UseGuards(WsJwtGuard, AdminRolesGuard)
-  @SubscribeMessage('answerConversation')
-  async handleAnswerConversation(
-    @ConnectedSocket() client: Socket,
 
-    @MessageBody() answerMessageDto: AnswerMessageDto,
-  ) {
-    try {
-      const admin = client.data;
-      const messageData = await this.chatService.answerConversationById(
-        answerMessageDto,
-        admin,
-      );
-      const conversationId = messageData?.conversation.id;
-      this.server
-        .to(`conversation_${conversationId}`)
-        .emit('answerMessage', messageData);
-       
-        this.server.emit('answerMessage', messageData)
-      } catch (error) {
-      console.error('❌ Error in handleAnswerConversation:', error);
-    }
-  }
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('getConversations')
