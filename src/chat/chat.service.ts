@@ -3,12 +3,12 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException
 } from '@nestjs/common';
 import { MessageDto } from './dto/message.dto';
 import { QueryRunner, DataSource, Repository, IsNull } from 'typeorm';
 import { Message } from './entities/Message.entity';
 import { User } from 'src/user/entities/user.entity';
-import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
 import { Conversation } from './entities/Conversation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AnswerMessageDto } from './dto/answer-message.dto';
@@ -203,6 +203,10 @@ export class ChatService {
       const conversation = await this.findConversationById(
         answerMessageDto.conversationId,
       );
+      if (!conversation) {
+        throw new NotFoundException('گفتگویی یافت نشد');
+      }
+
       if (!conversation.admin) {
         conversation.admin= admin;
         await queryRunner.manager.save(Conversation, conversation);
@@ -231,13 +235,11 @@ export class ChatService {
   }
 
   async findConversationById(conversationId: number) {
-    const conversation = await this.conversationRepository.findOne({
-      where: { id: conversationId },
+    return await this.conversationRepository.findOne({
+      where: { id: conversationId, isClosed:false },
       relations: ['user', 'admin'],
     });
-    if (!conversation) {
-      throw new NotFoundException('گفتگویی یافت نشد');
-    }
-    return conversation;
+
+
   }
 }
