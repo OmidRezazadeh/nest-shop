@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -198,13 +199,16 @@ export class ChatService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+     
       const conversation = await this.findConversationById(
         answerMessageDto.conversationId,
       );
       if (!conversation.admin) {
-        conversation.admin = admin;
+        conversation.admin= admin;
         await queryRunner.manager.save(Conversation, conversation);
-      }
+       }else if(conversation.admin.id !== admin.id ){
+         throw new ForbiddenException("شما مجاز به انجام این عملیات نیستید")  
+      }  
       const message = await this.createAndSaveMessage(
         queryRunner,
         admin,

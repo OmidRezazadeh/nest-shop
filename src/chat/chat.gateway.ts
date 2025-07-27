@@ -6,7 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import { Injectable, Logger, UseFilters, UseGuards } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException, UseFilters, UseGuards } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { ChatService } from './chat.service';
 import { WsJwtGuard } from './guards/auth.guard';
@@ -34,7 +34,9 @@ export class ChatGateway {
     @MessageBody() answerMessageDto: AnswerMessageDto,
   ) {
     try {
+
       const admin = client.data;
+
       const messageData = await this.chatService.answerConversationById(
         answerMessageDto,
         admin,
@@ -48,9 +50,16 @@ export class ChatGateway {
       } catch (error) {
 
         this.logger.error('Error in handleAnswerConversation:', error.message);
+
+        let errorMessage = 'خطایی رخ داده است، لطفا مجددا تلاش کنید.';
+      
+        if (error instanceof ForbiddenException || error instanceof NotFoundException) {
+          errorMessage = error.message;
+        }
+      
         client.emit('error', {
           event: 'answerConversation',
-          message: 'خطایی رخ داده است، لطفا مجددا تلاش کنید.',
+          message: errorMessage,
           details: error instanceof Error ? error.message : String(error),
         });
       }
