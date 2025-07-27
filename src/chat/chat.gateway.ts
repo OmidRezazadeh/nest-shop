@@ -25,6 +25,7 @@ export class ChatGateway {
 
   private readonly logger = new Logger(ChatGateway.name);
   constructor(private readonly chatService: ChatService) {}
+ 
   @UseGuards(WsJwtGuard, AdminRolesGuard)
   @SubscribeMessage('answerConversation')
   async handleAnswerConversation(
@@ -88,7 +89,13 @@ export class ChatGateway {
         .to(`conversation_${messageData?.conversation.id}`)
         .emit('message', formattedMessage);
     } catch (error) {
-      console.log(error);
+      this.logger.error(`Error sending message: ${error.message}`, error.stack);
+      
+      client.emit('error', {
+        event: 'sendMessage',
+        message: 'خطایی رخ داده است، لطفا مجددا تلاش کنید.',
+        details: error instanceof Error ? error.message : String(error),
+      });
     }
   }
   
