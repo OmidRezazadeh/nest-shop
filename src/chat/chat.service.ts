@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { MessageDto } from './dto/message.dto';
 import { QueryRunner, DataSource, Repository, IsNull } from 'typeorm';
 import { Message } from './entities/Message.entity';
@@ -15,13 +19,12 @@ import { ConversationDto } from './dto/conversation.dto';
 
 @Injectable()
 export class ChatService {
-  private readonly logger = new Logger(ChatService.name)
+  private readonly logger = new Logger(ChatService.name);
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(Conversation)
     private conversationRepository: Repository<Conversation>,
     private readonly dataService: DateService,
-
   ) {}
   async saveMessageUser(userId: number, messageDto: MessageDto) {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
@@ -35,10 +38,18 @@ export class ChatService {
         userId,
       );
 
-      const message = await this.createAndSaveMessage(queryRunner, user, conversation, messageDto.message);
+      const message = await this.createAndSaveMessage(
+        queryRunner,
+        user,
+        conversation,
+        messageDto.message,
+      );
 
-      const fullMessage = await this.getMessageWithRelations(queryRunner, message.id);
-   
+      const fullMessage = await this.getMessageWithRelations(
+        queryRunner,
+        message.id,
+      );
+
       await queryRunner.commitTransaction();
       return fullMessage;
     } catch (error) {
@@ -50,30 +61,41 @@ export class ChatService {
     }
   }
 
-  private async getMessageWithRelations(queryRunner: QueryRunner, messageId: number) {
+  private async getMessageWithRelations(
+    queryRunner: QueryRunner,
+    messageId: number,
+  ) {
     const message = await queryRunner.manager.findOne(Message, {
       where: { id: messageId },
-      relations: ['conversation', 'sender', 'conversation.user', 'conversation.admin'],
+      relations: [
+        'conversation',
+        'sender',
+        'conversation.user',
+        'conversation.admin',
+      ],
     });
-  
+
     if (!message) {
       throw new NotFoundException('پیامی یافت نشد');
     }
-  
+
     return message;
   }
 
-  private async createAndSaveMessage(queryRunner: QueryRunner, user: User, conversation: Conversation, content: string) {
+  private async createAndSaveMessage(
+    queryRunner: QueryRunner,
+    user: User,
+    conversation: Conversation,
+    content: string,
+  ) {
     const message = queryRunner.manager.create(Message, {
       content,
       sender: user,
       conversation: { id: conversation.id },
     });
-  
+
     return await queryRunner.manager.save(Message, message);
   }
-  
-
 
   private async getUserById(queryRunner: QueryRunner, userId: number) {
     const user = await queryRunner.manager.findOne(User, {
@@ -117,7 +139,7 @@ export class ChatService {
       },
     });
   }
-  
+
   async getUserConversations() {
     return await this.conversationRepository.find({
       where: {
@@ -172,36 +194,27 @@ export class ChatService {
     });
   }
   async answerConversationById(answerMessageDto: AnswerMessageDto, admin: any) {
-    const conversation = await this.conversationRepository.findOne({
-      where: { id: answerMessageDto.conversationId },
-      relations: ['user', 'admin'],
-    });
-    if (!conversation) {
-      throw new NotFoundException('گفتگویی یافت نشد');
-    }
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      conversation.admin = admin;
-      await queryRunner.manager.save(Conversation, conversation);
-
-      const message = queryRunner.manager.create(Message, {
-        sender: admin,
-        conversation: { id: answerMessageDto.conversationId },
-        content: answerMessageDto.message,
-      });
-      await queryRunner.manager.save(Message, message);
-
-      const messageData = queryRunner.manager.findOne(Message, {
-        where: { id: message.id },
-        relations: [
-          'conversation',
-          'conversation.user',
-          'sender',
-          'conversation.admin',
-        ],
-      });
+      const conversation = await this.findConversationById(
+        answerMessageDto.conversationId,
+      );
+      if (!conversation.admin) {
+        conversation.admin = admin;
+        await queryRunner.manager.save(Conversation, conversation);
+      }
+      const message = await this.createAndSaveMessage(
+        queryRunner,
+        admin,
+        conversation,
+        answerMessageDto.message,
+      );
+      const messageData = await this.getMessageWithRelations(
+        queryRunner,
+        message.id,
+      );
       await queryRunner.commitTransaction();
       return messageData;
     } catch (error) {
@@ -214,9 +227,13 @@ export class ChatService {
   }
 
   async findConversationById(conversationId: number) {
-    return this.conversationRepository.findOne({
+    const conversation = await this.conversationRepository.findOne({
       where: { id: conversationId },
       relations: ['user', 'admin'],
     });
+    if (!conversation) {
+      throw new NotFoundException('گفتگویی یافت نشد');
+    }
+    return conversation;
   }
 }

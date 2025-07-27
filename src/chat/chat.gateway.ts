@@ -46,10 +46,17 @@ export class ChatGateway {
         .to(`conversation_${conversationId}`)
         .emit('answerMessage', formattedMessage);
       } catch (error) {
+
         this.logger.error('Error in handleAnswerConversation:', error.message);
-        client.emit('error', { message: error.message });
-    }
+        client.emit('error', {
+          event: 'answerConversation',
+          message: 'خطایی رخ داده است، لطفا مجددا تلاش کنید.',
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
   }
+
+
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('getChat')
