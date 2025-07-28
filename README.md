@@ -1,6 +1,6 @@
 # 🛍️ E-commerce Store Backend
 
-This is a modern and scalable e-commerce backend built with **NestJS**, **PostgreSQL**, **Docker**, and **Redis**, featuring real-time shopping cart updates, Google login, payment gateway integration, and background job processing.
+This is a modern and scalable e-commerce backend built with **NestJS**, **PostgreSQL**, **Docker**, and **Redis**, featuring real-time chat, Google login, payment gateway integration, and background job processing.
 
 ## 🚀 Features
 - 🧾 **Product & Order,cart Management**  
