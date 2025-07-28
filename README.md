@@ -23,7 +23,7 @@ This is a modern and scalable e-commerce backend built with **NestJS**, **Postgr
 | **Docker**     | Containerization of services           |
 | **Redis**      | Caching & Queue system                 |
 | **BullMQ**     | Job queue for background processing    |
-| **WebSocket**  | Real-time updates for shopping cart    |
+| **WebSocket**  | Real-time chat                         |
 | **Passport.js**| Google login integration               |
 | **EventEmitter**| Internal event handling               |
 
