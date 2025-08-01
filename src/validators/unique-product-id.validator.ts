@@ -2,10 +2,11 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { CartItem } from 'src/cart-item/entities/cart-item.entity';
 
 @ValidatorConstraint({ name: 'UniqueProductIds', async: false })
 export class UniqueProductIds implements ValidatorConstraintInterface {
-  validate(cartItems: any[]) {
+  validate(cartItems: CartItem) {
     if (!Array.isArray(cartItems)) {
       return false;
     }

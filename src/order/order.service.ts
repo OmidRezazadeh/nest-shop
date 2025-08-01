@@ -150,7 +150,7 @@ export class OrderService {
     let order: any;
     if (user[0].role.id === ROLE_NAME.Clint) {
       // Client: only access own order
-      order = await this.orderRepository.findOne({
+       order = await this.orderRepository.findOne({
         where: { user: { id: userId }, id: orderId },
         relations: ['items', 'items.product', 'user'],
       });
@@ -327,7 +327,7 @@ export class OrderService {
   /**
    * Format order and items for API response.
    */
-  private formatOrderResponse(order: Order, cartItems: any): orderResponseDto {
+  private formatOrderResponse(order: Order, cartItems: CartItem[]): orderResponseDto {
     return plainToInstance(orderResponseDto, {
       id: order.id,
       status: getOrderStatusKey(order.status),

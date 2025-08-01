@@ -150,7 +150,7 @@ async create(cartDto: CartDto, userId: number) {
           ? this.dataService.convertToJalali(fullCart.created_at) // Convert date to Jalali
           : null,
         item:
-          fullCart?.items?.map((item: any) => ({
+          fullCart?.items?.map((item: CartItem) => ({
             id: item.id,
             price: item.price,
             quantity: item.quantity,
@@ -211,7 +211,7 @@ async getCartByUserId(userId: number) {
         ? this.dataService.convertToJalali(cart.created_at)
         : null,
       // Map cart items to include only essential fields: id, price, quantity, and product details
-      item: cart?.items?.map((item: any) => ({
+      item: cart?.items?.map((item: CartItem) => ({
         id: item.id,
         price: item.price,
         quantity: item.quantity,
