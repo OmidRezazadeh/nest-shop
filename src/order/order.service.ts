@@ -267,7 +267,7 @@ export class OrderService {
         created_at: order
           ? this.dataService.convertToJalali(order.created_at)
           : null,
-        item: order?.items?.map((item: any) => ({
+        item: order?.items?.map((item: OrderItem) => ({
           id: item.id,
           price: item.price,
           quantity: item.quantity,
@@ -309,7 +309,7 @@ export class OrderService {
         created_at: order
           ? this.dataService.convertToJalali(order.created_at)
           : null,
-        item: order?.items?.map((item: any) => ({
+        item: order?.items?.map((item: OrderItem) => ({
           id: item.id,
           price: item.price,
           quantity: item.quantity,
