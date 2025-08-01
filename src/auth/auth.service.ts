@@ -28,13 +28,16 @@ export class AuthService {
 
       async validateJwtUser(userId){
         const user= await this.userService.findById(userId)
-        if (!user) throw new UnauthorizedException('کاربری یافت نشد')
-        return user;  
+               if (!user) {
+                 throw new UnauthorizedException('کاربری یافت نشد')
+                  }
       }
       async validateGoogleUser(googleUser:CreateUserDto){
          const user = await this.userService.findByEmail(googleUser.email)
-         if(user) return user;
-         return await this.userService.create(googleUser)
+         if(!user){ 
+          throw new UnauthorizedException('کاربری یافت نشد')
+         }
+          return await this.userService.create(googleUser)
          
       }
 
