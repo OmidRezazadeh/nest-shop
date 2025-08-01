@@ -1,11 +1,10 @@
-import { Controller, Get, Request, Req, UseGuards, LoggerService, Query } from '@nestjs/common';
-import { request } from 'http';
+import { Controller, Get,  UseGuards, Query } from '@nestjs/common';
+
 import { ROLE_NAME } from 'src/common/constants/role-name';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/Role/role/role.guard';
-import { Repository } from 'typeorm';
-import { Log } from './entities/log.entity';
+
 import { LogsService } from './logs.service';
 import { ListLogDto } from './dto/list-log.dto';
 

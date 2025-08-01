@@ -1,9 +1,9 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Log } from './entities/log.entity';
-import { paginate } from 'src/utils/pagination';
+
 import { plainToInstance } from 'class-transformer';
 import { LogResponseDto } from './dto/logs-response.dto';
 import { DateService } from 'src/date/date.service';
