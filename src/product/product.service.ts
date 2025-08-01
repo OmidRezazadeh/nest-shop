@@ -327,7 +327,7 @@ export class ProductService {
     }
   }
 
-  async list(page: number = 1, limit: number = 10) {
+  async list(page = 1, limit = 10) {
     page = Math.max(1, page);
     limit = Math.max(1, Math.min(limit, 100));
     const cacheKey = `${RedisKeys.PRODUCTS_ALL}:${page}:${limit}`;
@@ -360,8 +360,8 @@ export class ProductService {
    
  async searchProducts(
   listProductDto: ListProductDto,
-  page: number = 1,
-  limit: number = 10
+  page = 1,
+  limit = 10
 ){  
     // Calculate how many records to skip based on the current page
     const skip = (page - 1) * limit;

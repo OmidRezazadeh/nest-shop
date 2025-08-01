@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ForbiddenException, UnauthorizedException } from 'src/common/constants/custom-http.exceptions';
 import { USER_STATUS } from 'src/common/constants/user-status';
 import { User } from 'src/user/entities/user.entity';
-import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
 
 @Injectable()

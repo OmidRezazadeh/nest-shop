@@ -6,7 +6,7 @@ import {
 import { TransactionService } from 'src/transaction/transaction.service';
 import { WalletService } from 'src/wallet/wallet.service';
 import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { ORDER_STATUS } from 'src/common/constants/order-status';
 import { CartService } from 'src/cart/cart.service';
 import { OrderService } from '../order/order.service';
