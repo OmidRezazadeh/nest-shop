@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, MinLength, Validate,  } from "class-validator";
+import { IsEmail, IsNotEmpty, MinLength  } from "class-validator";
 import { IsUnique } from "src/common/decorators/is-unique";
 import { Match } from "src/common/decorators/match.decorator";
 import { IsPhoneNumber } from "src/common/decorators/PhoneNumberConstraint.decorator";
