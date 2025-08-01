@@ -21,13 +21,10 @@ export async function pay(paymentData: any) {
 }
 export async function verify(authority:string, amount:number) {
   try {
-    const result= await zarinpal.PaymentVerification({
-      Amount:Math.floor(amount),
-      Authority:authority,
-
+    return await zarinpal.PaymentVerification({
+                Amount:Math.floor(amount),
+             Authority:authority,
     });
-    console.log(result);
-    return result;
   } catch (error) {
         console.log(error)
   }
