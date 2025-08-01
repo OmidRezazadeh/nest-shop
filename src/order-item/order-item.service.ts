@@ -48,10 +48,7 @@ export class OrderItemService {
           
 
         }
-    // const orderItems = order.items.map((item: any) => ({
-    //   quantity: item.quantity,
-    //    const product =
-    // }));
+
   }
 
   async validate(createOrderItemDto: CreateOrderItemDto, userId: number) {
