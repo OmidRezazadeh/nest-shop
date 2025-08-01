@@ -10,16 +10,13 @@ import { CheckVerifiedGuard } from 'src/guards/check-verfied/check-verified.guar
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { WalletService } from './wallet.service';
 import { PaymentService } from '../payment/payment.service';
-import { TransactionService } from '../transaction/transaction.service';
-import { DataSource } from 'typeorm';
+
 
 @Controller('wallet')
 export class WalletController {
   constructor(
     private readonly walletService: WalletService,
     private readonly paymentService: PaymentService,
-    private readonly transactionService: TransactionService,
-    private readonly dataSource: DataSource,
   ) {}
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
   @Post('/charge')

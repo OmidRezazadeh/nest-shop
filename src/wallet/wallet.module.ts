@@ -6,7 +6,6 @@ import { WalletController } from './wallet.controller';
 import { WalletService } from './wallet.service';
 import { JwtModule } from '@nestjs/jwt';
 import { Transaction } from 'src/transaction/entities/transaction.entity';
-import { TransactionService } from 'src/transaction/transaction.service';
 import { PaymentModule } from 'src/payment/payment.module';
 import { TransactionModule } from 'src/transaction/transaction.module';
 
