@@ -1,12 +1,11 @@
 import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
-  ValidationArguments,
 } from 'class-validator';
 
 @ValidatorConstraint({ name: 'UniqueProductIds', async: false })
 export class UniqueProductIds implements ValidatorConstraintInterface {
-  validate(cartItems: any[], args: ValidationArguments) {
+  validate(cartItems: any[]) {
     if (!Array.isArray(cartItems)) {
       return false;
     }
@@ -15,7 +14,7 @@ export class UniqueProductIds implements ValidatorConstraintInterface {
     return ids.length === uniqueIds.size;
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     return 'محصولات تکراری در سبد وجود دارد. شناسه هر محصول باید یکتا باشد.';
   }
 }

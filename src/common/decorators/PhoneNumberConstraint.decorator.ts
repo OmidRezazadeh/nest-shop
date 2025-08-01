@@ -4,7 +4,7 @@ import { registerDecorator, ValidationArguments, ValidationOptions, ValidatorCon
 @ValidatorConstraint({ name: 'IsPhoneNumber', async: false })
 export class IsPhoneNumberConstraint implements ValidatorConstraintInterface {
   
-  validate(value: string, args: ValidationArguments) {
+  validate(value: string) {
     // Define a regex pattern for phone number validation
     const phoneRegex = /^09\d{9}$/;  
 
