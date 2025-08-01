@@ -1,7 +1,6 @@
-import { Body, Controller, Delete, Put, Req, Request, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Put, Request, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ProfileDto } from './dto/profile.dto';
 import { Repository } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -9,7 +8,7 @@ import { ProfileService } from './profile.service';
 import { Photo } from 'src/upload/entities/photo.entity';
 
 import { UploadService } from '../upload/upload.service';
-import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
+
 @Controller('profile')
 export class ProfileController {
     constructor(
