@@ -3,7 +3,6 @@ import { confirmationCode } from './entities/confirmationCode';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfirmDto } from 'src/auth/dto/confirmDto';
-import {  CustomHttpException, NotFoundException } from 'src/common/constants/custom-http.exceptions';
 import { User } from 'src/user/entities/user.entity';
 
 import { USER_STATUS } from 'src/common/constants/user-status';
