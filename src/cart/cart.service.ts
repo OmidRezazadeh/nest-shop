@@ -11,6 +11,7 @@ import { CartResponseDto } from './dto/cart-response.dto';
 import { getCartStatusKey } from 'src/common/constants/cart-status';
 import { CART_STATUS } from '../common/constants/cart-status';
 import { LogsService } from '../logs/logs.service';
+import { CartDto } from './dto/create-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -29,7 +30,7 @@ export class CartService {
 // This method validates the incoming cart before creation:
 // - Checks if the user already has an open (default) cart.
 // - Verifies that each product in the cart exists and has enough quantity.
-async validate(cartDto: any, userId: number) {
+async validate(cartDto: CartDto, userId: number) {
   // Check if the user already has an open cart (status = default)
   const ExitsCart = await this.CartRepository.findOne({
     where: {
@@ -69,7 +70,7 @@ async validate(cartDto: any, userId: number) {
 
 // This method creates a new shopping cart with its items for a specific user.
 // It uses a database transaction to ensure data consistency in case of failure.
-async create(cartDto: any, userId: number) {
+async create(cartDto: CartDto, userId: number) {
   let totalPrice = 0;
 
   // Create a query runner for manual transaction management
