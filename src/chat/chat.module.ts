@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ChatController } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Conversation } from './entities/Conversation.entity';
@@ -12,7 +11,6 @@ import { DateService } from 'src/date/date.service';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Conversation,Message,User])],
-  controllers: [ChatController],
   providers:[ChatGateway,JwtService,WsJwtGuard,ChatService,DateService],
   exports: [ChatService],
 })
