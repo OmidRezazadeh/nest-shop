@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { DataSource, Repository, QueryRunner, ILike, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { DataSource, Repository, QueryRunner } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Photo } from 'src/upload/entities/photo.entity';

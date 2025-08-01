@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nest
 import { CreateProductDto } from './dto/create-product.dto';
 import { RedisKeys } from 'src/redis/redis-keys-constants';
 import { RedisService } from '../redis/redis.service';
-import { plainToInstance } from 'class-transformer';
 import { ROLE_NAME } from 'src/common/constants/role-name';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/Role/role/role.guard';
