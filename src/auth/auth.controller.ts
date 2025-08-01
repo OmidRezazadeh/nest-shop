@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ProfileService } from '../profile/profile.service';
 import { RegisterDto } from './dto/registerDto';
@@ -14,7 +14,6 @@ import { MailService } from '../email/email.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { ForgotPasswordDto } from './dto/forgotPasswordDto';
-import { UserService } from '../user/user.service';
 import { SavePasswordDto } from './dto/savePasswordDto';
 import { CustomThrottlerGuard } from '../guards/throttler/custom-throttler.guard';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
@@ -30,8 +29,6 @@ export class AuthController {
     private readonly dataSource: DataSource,
     private readonly confirmationCodeService:ConfirmationCodeService,
     private readonly  mailService:MailService,
-    private readonly userService:UserService
-
   ) {}
 
 
@@ -47,12 +44,8 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleCallback(@Req() req,) {
-   const user= req.user;
- const response = await this.authService.loginGoogle(user)
-  return{
-    response
-  }
-  
+    const {user} = req;
+  return await this.authService.loginGoogle(user)
 }
 
   @Post('register')
@@ -63,12 +56,10 @@ export class AuthController {
   
     try {
       const user = await this.authService.createUser(registerDto); // Ensure user creation returns the role
-  
+
       const profile = await this.profileService.create(user.id);
       const role = await queryRunner.manager.findOne(Role, { where: { id: user.role_id } });
-
-     const confirmationCode = randomInt(100000, 999999);
-
+      const confirmationCode = randomInt(100000, 999999);
      const {email} = user
      await this.confirmationCodeService.create(email,confirmationCode)
     await this.mailService.sendConfirmationEmail(email,confirmationCode)
@@ -141,7 +132,7 @@ export class AuthController {
 
   }
 
-  @Post('save-password')
+  @Patch('save-password')
   async savePassword(@Body() savePasswordDto:SavePasswordDto){
       await this.authService.validateSavePassword(savePasswordDto)
       await this.authService.updatePassword(savePasswordDto.email,savePasswordDto.new_password);
