@@ -69,26 +69,38 @@ async findByEmail(email:string) {
   await queryRunner.startTransaction();
 
   try {
+    const existingUser = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+  
+    // If user already exists, return it
+    if (existingUser) {
+      await queryRunner.commitTransaction();
+      return existingUser;
+    }
+  
     // 1. Create User
     const user = this.userRepository.create(createUserDto);
-    user.status = ROLE_NAME.Clint;
-    user.role_id = USER_STATUS.ACTIVE;
+    user.status = USER_STATUS.ACTIVE;
+    user.role_id = ROLE_NAME.Clint;
+  
     const newUser = await queryRunner.manager.save(user);
-
+  
     // 2. Create Profile
     const profile = this.profileRepository.create({ user_id: newUser.id });
     await queryRunner.manager.save(profile);
-
+  
     // 3. Commit Transaction
     await queryRunner.commitTransaction();
-
+  
     return newUser;
-  } catch (err) {
-    // Rollback if anything fails
+  
+  } catch (error) {
     await queryRunner.rollbackTransaction();
-    throw err;
+    throw error;
   } finally {
-    await queryRunner.release(); // Clean up
+    await queryRunner.release();
   }
+  
 }
 }

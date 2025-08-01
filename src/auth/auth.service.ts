@@ -12,6 +12,8 @@ import { NotFoundException, UnauthorizedException } from 'src/common/constants/c
 import { confirmationCode } from '../confirmation-code/entities/confirmationCode';
 import { CreateUserDto } from 'src/user/dto/googleUser.dto';
 import { LoginDto } from './dto/login.dto';
+import { SavePasswordDto } from './dto/savePasswordDto';
+import { GoogleLoginDto } from './dto/googleLoginDto';
 @Injectable()
 export class AuthService {
     constructor(
@@ -69,7 +71,7 @@ export class AuthService {
 
     return user; 
       }
-      async login(loginDto: LoginDto){
+      async login(loginDto: any){
           const user = await this.validateUser(loginDto.email, loginDto.password);
          const token= this.generateJwtToken(user)
           const hashedRefreshToken = await bcrypt.hash((await token).refreshToken, 10);
@@ -89,7 +91,7 @@ export class AuthService {
           accessToken,refreshToken
         } 
       }
-      async loginGoogle(user: any) {
+      async loginGoogle(user: GoogleLoginDto) {
 
         const { accessToken, refreshToken } = await this.generateJwtToken(user);
         return {
@@ -145,7 +147,7 @@ export class AuthService {
       }
       }
 
-     async validateSavePassword(savePasswordDto: any){
+     async validateSavePassword(savePasswordDto: SavePasswordDto){
           await this.validateEmail(savePasswordDto.email)
           
           const confirmationCode = await this.confirmationCodeRepository.findOne(
