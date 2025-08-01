@@ -71,7 +71,7 @@ export class AuthService {
 
     return user; 
       }
-      async login(loginDto: any){
+      async login(loginDto: LoginDto){
           const user = await this.validateUser(loginDto.email, loginDto.password);
          const token= this.generateJwtToken(user)
           const hashedRefreshToken = await bcrypt.hash((await token).refreshToken, 10);
