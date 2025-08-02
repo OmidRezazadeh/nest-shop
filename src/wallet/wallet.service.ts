@@ -38,11 +38,11 @@ export class WalletService {
     const balance = await this.walletRepository
       .createQueryBuilder('wallet')
       .select(
-        `SUM(CASE WHEN wallet.type = CAST(:depositType AS wallets_type_enum) THEN wallet.amount ELSE 0 END)`,
+        'SUM(CASE WHEN wallet.type = CAST(:depositType AS wallets_type_enum) THEN wallet.amount ELSE 0 END)',
         'totalDeposit'
       )
       .addSelect(
-        `SUM(CASE WHEN wallet.type = CAST(:withdrawType AS wallets_type_enum) THEN wallet.amount ELSE 0 END)`,
+        'SUM(CASE WHEN wallet.type = CAST(:withdrawType AS wallets_type_enum) THEN wallet.amount ELSE 0 END)',
         'totalWithdraw'
       )
       .where('wallet.userId = :userId', { userId })
