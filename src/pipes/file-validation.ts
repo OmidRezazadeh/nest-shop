@@ -24,7 +24,7 @@ export class FileSizeValidationPipe implements PipeTransform {
     }
 
     if(!this.allowedFormats.includes(value.mimetype)){
-        throw new BadRequestException(` فرمت  فایل  اپلود شده صحیح نیست`);
+      throw new BadRequestException('فرمت فایل اپلود شده صحیح نیست');
 
     }
 

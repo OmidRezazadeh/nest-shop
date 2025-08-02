@@ -69,7 +69,7 @@ export class ProductService {
       
       await queryRunner.manager.save(Product, product);
     
-      if (tag_ideas &&  tag_ideas.map(id => Number(id))) {
+      if (tag_ideas?.map(id => Number(id))) {
       
         const tagRepository = queryRunner.manager.getRepository(Tag);
         const existingTags = await tagRepository.findBy({ id: In(tag_ideas) });
