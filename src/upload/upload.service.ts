@@ -65,7 +65,7 @@ export class UploadService {
     }
   }
 
- async moveImageEditProduct(file_name: any, productId: number)
+ async moveImageEditProduct(file_name: string, productId: number)
 {
   const productFolder = path.join(
     __dirname,

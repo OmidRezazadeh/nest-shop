@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../user/entities/user.entity';
-import { RegisterDto } from './dto/registerDto'; // Adjust the path if necessary
+import { RegisterDto } from './dto/registerDto'; 
 import { USER_STATUS } from 'src/common/constants/user-status';
 import { ROLE_NAME } from 'src/common/constants/role-name';
 import { UserService } from '../user/user.service';
@@ -104,7 +104,7 @@ export class AuthService {
 
 
       async logout(userId:number){
-        await this.userRepository.update(userId, { refreshToken: null as any });
+        await this.userRepository.update(userId, { refreshToken: null});
       }
       async refreshToken(userId: number, refreshToken: string) {
         const user = await this.userRepository.findOne({ where: { id: userId } });

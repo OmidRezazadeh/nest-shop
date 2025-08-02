@@ -42,8 +42,8 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  @Column({ nullable: true })
-  refreshToken: string;
+@Column({ type: 'text', nullable: true })
+refreshToken: string | null;
 
   @Column({ name: 'role_id' })
   role_id: number;

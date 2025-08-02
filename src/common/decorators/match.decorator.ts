@@ -5,7 +5,7 @@ export class MatchConstraint implements ValidatorConstraintInterface{
 
     validate(value:any, args: ValidationArguments){
        const [relatedPropertyName]  = args.constraints;
-       const relatedValue=(args.object as any)[relatedPropertyName];
+       const relatedValue=(args.object)[relatedPropertyName];
        return value === relatedValue; // Fix: Use strict comparison
     }
     defaultMessage(args: ValidationArguments) {

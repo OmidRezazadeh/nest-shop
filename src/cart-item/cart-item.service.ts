@@ -5,6 +5,7 @@ import { Cart } from 'src/cart/entities/cart.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException } from 'src/common/constants/custom-http.exceptions';
 import { CartItem } from './entities/cart-item.entity';
+import { CartItemDeleteDto } from './dto/cart-item-delete.dto';
 
 @Injectable()
 export class CartItemService {
@@ -36,7 +37,7 @@ async extractCartAndItemIds(cartItemDeleteDto: any, userId: number) {
   const cartItemIds: number[] = cart.items.map(item => Number(item.id));
 
   // Get the item IDs the user wants to delete from the request body
-  const currentCartItemIds: number[] = cartItemDeleteDto.cart_item_ids.map((id: any) => Number(id));
+  const currentCartItemIds: number[] = cartItemDeleteDto.cart_item_ids.map((id: number) => Number(id));
 
   // Return the cart and both ID arrays
   return { cart, cartItemIds, currentCartItemIds };
@@ -46,7 +47,7 @@ async extractCartAndItemIds(cartItemDeleteDto: any, userId: number) {
 
 
 // This method ensures that the items to be deleted actually exist in the user's cart
-async validateDelete(cartItemDeleteDto: any, userId: number) {
+async validateDelete(cartItemDeleteDto: CartItemDeleteDto, userId: number) {
   // Extract the cart and both sets of item IDs
   const { cartItemIds, currentCartItemIds } = await this.extractCartAndItemIds(cartItemDeleteDto, userId);
 
@@ -62,7 +63,7 @@ async validateDelete(cartItemDeleteDto: any, userId: number) {
 
 
 // This method deletes cart items or the entire cart depending on the deletion scenario
-async delete(cartItemDeleteDto: any, userId: any) {
+async delete(cartItemDeleteDto: CartItemDeleteDto, userId: number) {
   // Extract the cart and item IDs
   const { cart, cartItemIds, currentCartItemIds } = await this.extractCartAndItemIds(cartItemDeleteDto, userId);
 
