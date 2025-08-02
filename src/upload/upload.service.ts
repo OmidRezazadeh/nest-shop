@@ -45,7 +45,7 @@ export class UploadService {
     }
   }
 
-  async moveImageProduct(file_names: any, productId: number) {
+  async moveImageProduct(file_names: string[], productId: number) {
     const productFolder = path.join(
       __dirname,
       `../../${process.env.PRODUCT_DIR}/${productId}`,
