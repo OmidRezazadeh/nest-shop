@@ -10,6 +10,7 @@ import { Product } from 'src/product/entities/product.entity';
 import { CreateOrderItemDto } from './dto/create-order-item.dto';
 import { Order } from 'src/order/entities/order';
 import { ORDER_STATUS } from 'src/common/constants/order-status';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { BadRequestException } from 'src/common/constants/custom-http.exceptions';
 import { plainToInstance } from 'class-transformer';
 import { ListOrderItemDto } from './dto/list-order-item.dto';
@@ -38,12 +39,12 @@ export class OrderItemService {
       relations: ['items','items.product'], 
     });
     if (!order) {
-      throw new NotFoundException(' سفارشی یافت نشد')
+      throw new NotFoundException(ErrorMessage.ORDER.NOT_FOUND)
     }
   
         for(  const orderItem of order.items  ){
           if(orderItem.quantity>orderItem.product.quantity ){
-              throw new BadRequestException(` تعداد کالا ${orderItem.product.name} موجود نیست `)
+              throw new BadRequestException(ErrorMessage.ORDER_ITEM.PRODUCT_OUT_OF_STOCK_BY_NAME(orderItem.product.name))
           }
           
 
@@ -61,7 +62,7 @@ export class OrderItemService {
     });
 
     if (!order) {
-      throw new NotFoundException('  سفارشی یافت نشد');
+      throw new NotFoundException(ErrorMessage.ORDER.NOT_FOUND);
     }
 
     const product = await this.productRepository.findOne({
@@ -69,11 +70,11 @@ export class OrderItemService {
     });
 
     if (!product) {
-      throw new NotFoundException('محصولی یافت نشد');
+      throw new NotFoundException(ErrorMessage.PRODUCT.NOT_FOUND);
     }
 
     if (createOrderItemDto.quantity > product.quantity) {
-      throw new BadRequestException(' تعداد محصول کمتر از تعداد درخواستی است ');
+      throw new BadRequestException(ErrorMessage.ORDER_ITEM.QUANTITY_LESS_THAN_REQUESTED);
     }
   }
  
@@ -88,7 +89,7 @@ export class OrderItemService {
       });
 
       if (!product) {
-        throw new NotFoundException('محصولی یافت نشد');
+        throw new NotFoundException(ErrorMessage.PRODUCT.NOT_FOUND);
       }
 
       const order = await queryRunner.manager.findOne(Order, {
@@ -96,7 +97,7 @@ export class OrderItemService {
       });
 
       if (!order) {
-        throw new NotFoundException('سفارشی یافت نشد');
+        throw new NotFoundException(ErrorMessage.ORDER.NOT_FOUND);
       }
 
       // Calculate total
@@ -208,11 +209,11 @@ export class OrderItemService {
       });
 
       if (!orderItem) {
-        throw new NotFoundException('آیتمی یافت نشد');
+        throw new NotFoundException(ErrorMessage.ORDER_ITEM.NOT_FOUND);
       }
 
       if (orderItem.order.user.id !== userId) {
-        throw new ForbiddenException('شما مجاز به انجام این عملیات نیستید');
+        throw new ForbiddenException(ErrorMessage.PERMISSION.OPERATION_FORBIDDEN);
       }
 
       const orderId = orderItem.order.id;

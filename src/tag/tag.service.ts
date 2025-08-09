@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Tag } from './entities/tag.entity';
 import { ILike, Repository } from 'typeorm';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { CreateTagDto } from './dto/CreateTag.Dto';
 import { UpdateTagDto } from './dto/UpdateTag.Dto';
 import { ListTagsDto } from './dto/ListTags.Dto';
@@ -27,7 +28,7 @@ export class TagService {
   async edit(updateDto:UpdateTagDto, id:number){
      const tag = await this.tagRepository.findOne({where:{id:id}});
      if (!tag) {
-      throw new NotFoundException("تگ مورد نظر یافت نشد")
+      throw new NotFoundException(ErrorMessage.TAG.NOT_FOUND)
      }
      await this.tagRepository.update({id:id},{name:updateDto.name})
   }

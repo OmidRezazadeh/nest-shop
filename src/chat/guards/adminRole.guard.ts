@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Socket } from 'socket.io';
@@ -23,7 +24,7 @@ export class AdminRolesGuard implements CanActivate {
     const userId = client?.data?.id;
 
     if (!userId) {
-      throw new ForbiddenException('شناسه کاربر یافت نشد');
+      throw new ForbiddenException(ErrorMessage.USER.ID_NOT_FOUND);
     }
 
     const user = await this.userRepository.findOne({
@@ -32,7 +33,7 @@ export class AdminRolesGuard implements CanActivate {
     });
 
     if (!user || user.role.id !== ROLE_NAME.Admin) {
-      throw new ForbiddenException('شما اجازه دسترسی ندارید');
+      throw new ForbiddenException(ErrorMessage.PERMISSION.ACCESS_DENIED);
     }
 
     return true;

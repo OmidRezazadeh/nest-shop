@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { confirmationCode } from './entities/confirmationCode';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,7 +33,7 @@ async confirmEmail(confirmDto: ConfirmDto) {
       });
   
       if (!confirmation) {
-        throw new BadRequestException('کد وارد شده صحیح نیست ');
+        throw new BadRequestException(ErrorMessage.CONFIRMATION_CODE.INVALID);
       }
   
       // Check expiration time (2 minutes)
@@ -42,7 +43,7 @@ async confirmEmail(confirmDto: ConfirmDto) {
         (currentTime.getTime() - createdAt.getTime()) / (1000 * 60);
   
       if (differenceInMinutes > 2) {
-        throw new BadRequestException(' این کد منقضی شده ');
+        throw new BadRequestException(ErrorMessage.CONFIRMATION_CODE.EXPIRED);
       }
   
       // Update user status inside the same transaction

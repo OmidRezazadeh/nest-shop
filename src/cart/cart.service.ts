@@ -12,6 +12,7 @@ import { getCartStatusKey } from 'src/common/constants/cart-status';
 import { CART_STATUS } from '../common/constants/cart-status';
 import { LogsService } from '../logs/logs.service';
 import { CartDto } from './dto/create-cart.dto';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 
 @Injectable()
 export class CartService {
@@ -41,7 +42,7 @@ async validate(cartDto: CartDto, userId: number) {
 
   // If a default cart already exists, prevent creating another one
   if (ExitsCart) {
-    throw new BadRequestException('سبد خرید دیگری وجود دارد'); // "Another cart already exists"
+    throw new BadRequestException(ErrorMessage.CART.ALREADY_EXISTS);
   }
 
   // Loop through each item in the cart DTO to validate products
@@ -53,12 +54,12 @@ async validate(cartDto: CartDto, userId: number) {
 
     // If the product doesn't exist, throw an error
     if (!product) {
-      throw new NotFoundException('محصولی یافت نشد'); // "Product not found"
+      throw new NotFoundException(ErrorMessage.PRODUCT.NOT_FOUND);
     }
 
     // Check if requested quantity exceeds available stock
     if (cart.quantity > product.quantity) {
-      throw new BadRequestException('تعداد محصول بیش از حد موجود است'); // "Requested quantity exceeds stock"
+      throw new BadRequestException(ErrorMessage.CART_ITEM.QUANTITY_EXCEEDS_STOCK);
     }
   }
 }
@@ -88,7 +89,7 @@ async create(cartDto: CartDto, userId: number) {
       // If product not found, throw a 404 error
       if (!product) {
         throw new NotFoundException(
-          `محصول با شناسه ${cart.product_id} یافت نشد`, // "Product with ID ... not found"
+          ErrorMessage.PRODUCT.NOT_FOUND_BY_ID(cart.product_id),
         );
       }
 
@@ -169,7 +170,7 @@ async create(cartDto: CartDto, userId: number) {
     // If any error occurs during transaction, rollback all DB operations
     await queryRunner.rollbackTransaction();
     console.error(error); // Log the error for debugging
-    throw new BadRequestException('ثبت سبد خرید با خطا مواجه شد'); // "Failed to create cart"
+    throw new BadRequestException(ErrorMessage.CART.CREATE_FAILED);
   } finally {
     // Always release the query runner whether success or error
     await queryRunner.release();
@@ -194,7 +195,7 @@ async getCartByUserId(userId: number) {
 
   // If no cart is found, throw a 400 BadRequest exception
   if (!cart) {
-    throw new BadRequestException('سبد خرید وجود ندارد'); // "Cart does not exist"
+    throw new BadRequestException(ErrorMessage.CART.NOT_FOUND);
   }
 
   // Transform the raw cart entity into a response DTO using class-transformer
@@ -260,7 +261,7 @@ async checkExistsCart(userId: number) {
 
   // If no such cart is found, throw a 404 Not Found exception
   if (!cart) {
-    throw new NotFoundException('سبد خریدی یافت نشد'); // "No cart found"
+    throw new NotFoundException(ErrorMessage.CART.NOT_FOUND);
   }
 }
 

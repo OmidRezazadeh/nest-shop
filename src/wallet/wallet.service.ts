@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { Wallet } from './entities/wallet.entity';
 import { QueryRunner, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -70,7 +71,7 @@ export class WalletService {
  async validateWalletBalance(userId:number,totalPrice:number){
   const balance = await this.getWalletBalance(userId);
   if (totalPrice >= balance) {
-    throw new NotFoundException('  مبلغ کیف پول کافی نیست ');
+    throw new NotFoundException(ErrorMessage.WALLET.INSUFFICIENT_BALANCE);
   }
  }
 }

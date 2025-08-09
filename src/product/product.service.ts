@@ -17,6 +17,7 @@ import { RedisKeys } from 'src/redis/redis-keys-constants';
 import { paginate } from 'src/utils/pagination';
 import { EditProductDto } from './dto/edit-product.dto';
 import { NotFoundException } from 'src/common/constants/custom-http.exceptions';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import * as fs from 'fs';
 import * as path from 'path';
 

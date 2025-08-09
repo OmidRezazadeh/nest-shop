@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Photo } from './entities/photo.entity';
 import { Repository } from 'typeorm';
@@ -41,7 +42,7 @@ export class UploadService {
     );
 
     if (!fs.existsSync(imagePath)) {
-      throw new NotFoundException('عکس مورد نظر یافت نشد');
+      throw new NotFoundException(ErrorMessage.PHOTO.NOT_FOUND);
     }
   }
 
@@ -99,7 +100,7 @@ export class UploadService {
     });
 
     if (!productFileName) {
-      throw new NotFoundException('عکس مورد نظر یافت نشد');
+      throw new NotFoundException(ErrorMessage.PHOTO.NOT_FOUND);
     }
 
     const oldProductImage = path.join(

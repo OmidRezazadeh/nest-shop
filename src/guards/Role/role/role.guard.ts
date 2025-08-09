@@ -1,5 +1,6 @@
 // roles.guard.ts
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { Reflector } from '@nestjs/core';
 import { User } from 'src/user/entities/user.entity';
 
@@ -20,7 +21,7 @@ export class RolesGuard implements CanActivate {
   
     // Check if the user has the required role id
     if (!user || user.role_id !== requiredRoleId) {
-      throw new ForbiddenException('شما اجازه دسترسی ندارید');
+      throw new ForbiddenException(ErrorMessage.PERMISSION.ACCESS_DENIED);
     }
     return true;
   }

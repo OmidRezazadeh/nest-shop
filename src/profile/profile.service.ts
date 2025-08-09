@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from './entities/profile';
 import { Repository } from 'typeorm';
@@ -28,7 +29,7 @@ export class ProfileService {
       where: { user_id: userId },
     });
     if (!profile) {
-      throw new NotFoundException('پروفایلی یافت نشد');
+      throw new NotFoundException(ErrorMessage.PROFILE.NOT_FOUND);
     }
     return profile;
   }
@@ -40,7 +41,7 @@ export class ProfileService {
     const imagePath = path.join(__dirname, `../../${process.env.UPLOAD_DIR}/${imageName}`);
   
     if (!fs.existsSync(imagePath)) {
-      throw new NotFoundException('عکس مورد نظر یافت نشد');
+      throw new NotFoundException(ErrorMessage.PHOTO.NOT_FOUND);
     }
   
     const userFolder = path.join(__dirname, `../../${process.env.PROFILE_DIR}/${userId}`);
@@ -98,7 +99,7 @@ export class ProfileService {
  async deleteImage(userId){
   const photo = await this.photoRepository.findOne({where:{imageable_id:userId}})
   if (!photo) {
-    throw new NotFoundException('عکسی یافت نشد')
+    throw new NotFoundException(ErrorMessage.PHOTO.NOT_FOUND)
   }
   const userImage = path.join(__dirname, `../../${process.env.PROFILE_DIR}/${userId}/${photo.filename}`);
   if (fs.existsSync(userImage)) {

@@ -9,6 +9,7 @@ import { ROLE_NAME } from 'src/common/constants/role-name';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { NotFoundException, UnauthorizedException } from 'src/common/constants/custom-http.exceptions';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { confirmationCode } from '../confirmation-code/entities/confirmationCode';
 import { CreateUserDto } from 'src/user/dto/googleUser.dto';
 import { LoginDto } from './dto/login.dto';
@@ -28,16 +29,16 @@ export class AuthService {
 
       ) {}
 
-      async validateJwtUser(userId){
+      async validateJwtUser(userId:number){
         const user= await this.userService.findById(userId)
                if (!user) {
-                 throw new UnauthorizedException('کاربری یافت نشد')
+                 throw new UnauthorizedException(ErrorMessage.AUTH.UNAUTHORIZED)
                   }
       }
       async validateGoogleUser(googleUser:CreateUserDto){
          const user = await this.userService.findByEmail(googleUser.email)
          if(!user){ 
-          throw new UnauthorizedException('کاربری یافت نشد')
+          throw new UnauthorizedException(ErrorMessage.AUTH.UNAUTHORIZED)
          }
           return await this.userService.create(googleUser)
          
@@ -60,13 +61,13 @@ export class AuthService {
       async validateUser(email:string, password:string){
         const user =await this.userService.findByEmail(email);
         if(!user){
-           throw new UnauthorizedException(' ایمیل وارد شده صحیح نیست ');
+           throw new UnauthorizedException(ErrorMessage.AUTH.INVALID_CREDENTIALS);
 
         }
         
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('رمز عبور وارد شده صحیح نیست ');
+      throw new UnauthorizedException(ErrorMessage.AUTH.INVALID_CREDENTIALS);
     }
 
     return user; 
@@ -110,19 +111,19 @@ export class AuthService {
         const user = await this.userRepository.findOne({ where: { id: userId } });
       
         if (!user) {
-          throw new UnauthorizedException('کاربری یافت نشد');
+          throw new UnauthorizedException(ErrorMessage.AUTH.UNAUTHORIZED);
         }
       
         // Check if the refresh token matches the stored token
         if (user.refreshToken !== refreshToken) {
-          throw new UnauthorizedException('توکن وارد شد نامعتبر است');
+          throw new UnauthorizedException(ErrorMessage.AUTH.REFRESH_TOKEN_INVALID);
         }
       
         try {
           // Verify if the refresh token is still valid
           this.jwtService.verify(refreshToken);
         } catch (error) {
-          throw new UnauthorizedException('نشانه Refresh منقضی شده است. لطفا دوباره وارد شوید');
+          throw new UnauthorizedException(ErrorMessage.AUTH.REFRESH_TOKEN_EXPIRED);
         }
       
         // Generate new tokens
@@ -143,7 +144,7 @@ export class AuthService {
      async validateEmail(email:string){
       const user =await this.userService.findByEmail(email);
       if(!user){
-         throw new UnauthorizedException(' ایمیل وارد شده صحیح نیست ');
+         throw new UnauthorizedException(ErrorMessage.AUTH.INVALID_CREDENTIALS);
       }
       }
 
@@ -154,9 +155,8 @@ export class AuthService {
             {where:{ email:savePasswordDto.email, code:savePasswordDto.code}
           });
           if (!confirmationCode) {
-             throw new NotFoundException(" کد وارد شده صحیح نیست")
-          
-            }
+             throw new NotFoundException(ErrorMessage.CONFIRMATION_CODE.INVALID)
+           }
 
             const currentTime = new Date();
             const createdAt = new Date(confirmationCode.createdAt);
@@ -164,7 +164,7 @@ export class AuthService {
               (currentTime.getTime() - createdAt.getTime()) / (1000 * 60);
         
             if (differenceInMinutes > 2) {
-              throw new BadRequestException(' این کد منقضی شده ');
+              throw new BadRequestException(ErrorMessage.CONFIRMATION_CODE.EXPIRED);
             }
 
 

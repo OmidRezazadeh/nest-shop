@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { QueryRunner, Repository } from 'typeorm';
 import {Transaction} from 'src/transaction/entities/transaction.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -39,7 +40,7 @@ export class TransactionService {
       ],
     });
     if (!transaction) {
-      throw new NotFoundException('تراکنش یافت نشد');
+      throw new NotFoundException(ErrorMessage.TRANSACTION.NOT_FOUND);
     }
     return transaction;
   }

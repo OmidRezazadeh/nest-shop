@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from 'src/cart/entities/cart.entity';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
@@ -60,10 +61,10 @@ export class OrderService {
       where: { id: orderId, user: { id: userId } },
     });
     if (!order) {
-      throw new NotFoundException('سفارشی یافت نشد');
+      throw new NotFoundException(ErrorMessage.ORDER.NOT_FOUND);
     }
     if (order.status === ORDER_STATUS.paid ) {
-      throw new BadRequestException(' این سفارش قبلا پرداخت شده ')
+      throw new BadRequestException(ErrorMessage.ORDER.ALREADY_PAID)
    }
     return order;
   }
@@ -117,14 +118,14 @@ export class OrderService {
     const order = await this.orderRepository.findOne({ where: { id: id } });
     if (!order) {
       // Throw if order not found
-      throw new NotFoundException('سفارشی یافت نشد');
+      throw new NotFoundException(ErrorMessage.ORDER.NOT_FOUND);
     }
 
     // Check if the status is valid using getOrderStatusKey
     const isValidStatus = getOrderStatusKey(status);
     if (isValidStatus === undefined) {
       // Throw if status is invalid
-      throw new NotFoundException(' وضعیت وارد شده صحیح نیست');
+      throw new NotFoundException(ErrorMessage.ORDER.INVALID_STATUS);
     }
   }
 
@@ -145,7 +146,7 @@ export class OrderService {
       relations: ['role'],
     });
     if (!user) {
-      throw new NotFoundException(' کاربری یافت نشد');
+      throw new NotFoundException(ErrorMessage.USER.NOT_FOUND);
     }
     let order: any;
     if (user[0].role.id === ROLE_NAME.Clint) {
@@ -155,9 +156,7 @@ export class OrderService {
         relations: ['items', 'items.product', 'user'],
       });
       if (!order) {
-        throw new ForbiddenException(
-          'شما نمیتوانید به این سفارش دسترسی داشته باشید ',
-        );
+        throw new ForbiddenException(ErrorMessage.ORDER.ACCESS_DENIED);
       }
       return this.formatOrderResponse(order, order.items);
     } else if (user[0].role.id === ROLE_NAME.Admin) {
@@ -167,7 +166,7 @@ export class OrderService {
         relations: ['items', 'items.product', 'user'],
       });
       if (!order) {
-        throw new NotFoundException('سفارشی  یافت نشد');
+        throw new NotFoundException(ErrorMessage.ORDER.NOT_FOUND);
       }
       return this.formatOrderResponse(order, order.items);
     }
@@ -395,7 +394,7 @@ export class OrderService {
       relations: ['items', 'items.product', 'user'],
     });
     if (!cart) {
-      throw new NotFoundException('سبدی یافت نشد');
+      throw new NotFoundException(ErrorMessage.CART.NOT_FOUND);
     }
     return cart;
   }

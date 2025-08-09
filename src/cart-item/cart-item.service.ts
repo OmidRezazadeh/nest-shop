@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException } from 'src/common/constants/custom-http.exceptions';
 import { CartItem } from './entities/cart-item.entity';
 import { CartItemDeleteDto } from './dto/cart-item-delete.dto';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 
 @Injectable()
 export class CartItemService {
@@ -30,7 +31,7 @@ async extractCartAndItemIds(cartItemDeleteDto: any, userId: number) {
   
   // If no cart exists, throw a 404 error
   if (!cart) {
-    throw new NotFoundException('سبد خریدی یافت نشد'); // "No cart found"
+    throw new NotFoundException(ErrorMessage.CART.NOT_FOUND); // "No cart found"
   }
 
   // Get all existing cart item IDs from the user's cart
@@ -56,7 +57,7 @@ async validateDelete(cartItemDeleteDto: CartItemDeleteDto, userId: number) {
 
   // If some items don't exist in the cart, throw a 400 Bad Request error
   if (!allExist) {
-    throw new BadRequestException('برخی آیتم‌ها در سبد خرید شما وجود ندارند.'); // "Some items are not in your cart."
+    throw new BadRequestException(ErrorMessage.CART_ITEM.NOT_FOUND); // "Some items are not in your cart."
   }
 }
 

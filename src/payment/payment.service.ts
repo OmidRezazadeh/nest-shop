@@ -8,6 +8,7 @@ import { WalletService } from 'src/wallet/wallet.service';
 import { CreateWalletDto } from 'src/wallet/dto/create-wallet-dto';
 import { DataSource } from 'typeorm';
 import { ORDER_STATUS } from 'src/common/constants/order-status';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 import { CartService } from 'src/cart/cart.service';
 import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
@@ -43,7 +44,7 @@ export class PaymentService {
       if (status !== 'OK') {
         await this.transactionService.markAsFailed(transaction, queryRunner);
         await queryRunner.commitTransaction();
-        return { message: 'پرداخت لغو شد' };
+        return { message: ErrorMessage.PAYMENT.CANCELED };
       }
 
       const result = await verify(authority, transaction.amount);
@@ -71,18 +72,18 @@ export class PaymentService {
         await this.walletService.markAsSuccess(transaction.wallet, queryRunner);
         await queryRunner.commitTransaction();
         return {
-          message: ' پرداخت با موفقیت انجام شد',
+          message: ErrorMessage.PAYMENT.SUCCESS,
           refId: result.refId,
         };
       } else {
         await this.transactionService.markAsFailed(transaction, queryRunner);
         await queryRunner.commitTransaction();
-        return { message: 'پرداخت ناموفق' };
+        return { message: ErrorMessage.PAYMENT.FAILED };
       }
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
-      throw new BadRequestException(' پرداخت با مشکل مواجه شد');
+      throw new BadRequestException(ErrorMessage.PAYMENT.ERROR);
     } finally {
       await queryRunner.release();
     }
@@ -121,7 +122,7 @@ export class PaymentService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
-      throw new BadRequestException(' پرداخت با مشکل مواجه شد');
+      throw new BadRequestException(ErrorMessage.PAYMENT.ERROR);
     } finally {
       await queryRunner.release();
     }

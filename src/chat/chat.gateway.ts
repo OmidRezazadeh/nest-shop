@@ -15,6 +15,7 @@ import { AnswerMessageDto } from './dto/answer-message.dto';
 import { AdminRolesGuard } from './guards/adminRole.guard';
 import { ChatDto } from './dto/chat.dto';
 import { WsAllExceptionsFilter } from './ws-exception/ws-exception.filter';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 
 @WebSocketGateway({ namespace: 'chat' })
 @UseFilters(new WsAllExceptionsFilter())
@@ -51,7 +52,7 @@ export class ChatGateway {
 
         this.logger.error('Error in handleAnswerConversation:', error.message);
 
-        let errorMessage = 'خطایی رخ داده است، لطفا مجددا تلاش کنید.';
+        let errorMessage = ErrorMessage.GENERAL.TRY_AGAIN;
       
         if (error instanceof ForbiddenException || error instanceof NotFoundException) {
           errorMessage = error.message;

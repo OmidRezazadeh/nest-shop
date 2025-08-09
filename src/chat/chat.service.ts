@@ -17,6 +17,7 @@ import { clientMessageDto } from './dto/client-message.dto';
 import { DateService } from 'src/date/date.service';
 import { ChatDto } from './dto/chat.dto';
 import { ConversationDto } from './dto/conversation.dto';
+import { ErrorMessage } from 'src/common/errors/error-messages';
 
 @Injectable()
 export class ChatService {
@@ -56,7 +57,7 @@ export class ChatService {
     } catch (error) {
       this.logger.error(`Message save failed: ${error.message}`, error.stack);
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException('لطفا مجددا امتحان کنید');
+      throw new InternalServerErrorException(ErrorMessage.GENERAL.RETRY);
     } finally {
       await queryRunner.release();
     }
@@ -77,7 +78,7 @@ export class ChatService {
     });
 
     if (!message) {
-      throw new NotFoundException('پیامی یافت نشد');
+      throw new NotFoundException(ErrorMessage.CHAT.NOT_FOUND);
     }
 
     return message;
@@ -103,7 +104,7 @@ export class ChatService {
       where: { id: userId },
     });
     if (!user) {
-      throw new NotFoundException('کاربری یافت نشد');
+      throw new NotFoundException(ErrorMessage.USER.NOT_FOUND);
     }
     return user;
   }
@@ -126,7 +127,7 @@ export class ChatService {
   }
   formatMessageResponse(messageData: any) {
     if (!messageData) {
-      throw new NotFoundException(' پیامی یافت نشد');
+      throw new NotFoundException(ErrorMessage.CHAT.NOT_FOUND);
     }
     return plainToInstance(clientMessageDto, {
       message: messageData.content,
@@ -168,7 +169,7 @@ export class ChatService {
       .getOne();
 
     if (!conversation) {
-      throw new NotFoundException(' شما اجازه دسترسی به این چت را ندارید');
+      throw new NotFoundException(ErrorMessage.CHAT.ACCESS_DENIED);
     }
 
     return plainToInstance(ConversationDto, {
@@ -204,14 +205,14 @@ export class ChatService {
         answerMessageDto.conversationId,
       );
       if (!conversation) {
-        throw new NotFoundException('گفتگویی یافت نشد');
+        throw new NotFoundException(ErrorMessage.CHAT.CONVERSATION_NOT_FOUND);
       }
 
       if (!conversation.admin) {
         conversation.admin= admin;
         await queryRunner.manager.save(Conversation, conversation);
        }else if(conversation.admin.id !== admin.id ){
-         throw new ForbiddenException("شما مجاز به انجام این عملیات نیستید")  
+         throw new ForbiddenException(ErrorMessage.PERMISSION.OPERATION_FORBIDDEN)  
       }  
       const message = await this.createAndSaveMessage(
         queryRunner,
