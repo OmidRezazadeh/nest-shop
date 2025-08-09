@@ -165,7 +165,7 @@ export class AuthService {
         
             if (differenceInMinutes > 2) {
               throw new BadRequestException(ErrorMessage.CONFIRMATION_CODE.EXPIRED);
-            }
+            } 
 
 
 
