@@ -24,14 +24,9 @@ import { ForbiddenException } from 'src/common/constants/custom-http.exceptions'
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(Cart)
-    private readonly cartRepository: Repository<Cart>,
 
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-
-    @InjectRepository(OrderItem)
-    private readonly orderItemRepository: Repository<OrderItem>,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,

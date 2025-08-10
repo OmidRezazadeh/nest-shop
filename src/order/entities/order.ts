@@ -14,7 +14,7 @@ export class Order {
   @OneToMany(()=> OrderItem, item=>item.order,{cascade:true})
   items:OrderItem[]
 
-  @Column({ type:'enum', default: ORDER_STATUS.pending })
+  @Column({ type: 'enum', enum: Object.values(ORDER_STATUS), default: ORDER_STATUS.pending })
   status: orderStatus;
 
   @Column()
