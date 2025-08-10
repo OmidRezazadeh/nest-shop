@@ -1,4 +1,4 @@
-import { ORDER_STATUS } from 'src/common/constants/order-status';
+import { ORDER_STATUS, orderStatus } from 'src/common/constants/order-status';
 import { OrderItem } from 'src/order-item/entities/order-item';
 import { User } from 'src/user/entities/user.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany } from 'typeorm';
@@ -14,8 +14,8 @@ export class Order {
   @OneToMany(()=> OrderItem, item=>item.order,{cascade:true})
   items:OrderItem[]
 
-  @Column({ default: ORDER_STATUS.pending })
-  status: number;
+  @Column({ type:'enum', default: ORDER_STATUS.pending })
+  status: orderStatus;
 
   @Column()
   total_price: number;

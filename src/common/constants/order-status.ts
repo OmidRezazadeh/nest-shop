@@ -6,3 +6,4 @@ export const ORDER_STATUS={
 export const getOrderStatusKey = (value: number | undefined): keyof typeof ORDER_STATUS | undefined => {
     return Object.entries(ORDER_STATUS).find(([_, v]) => v === value)?.[0] as keyof typeof ORDER_STATUS | undefined;
   };
+export type orderStatus= typeof ORDER_STATUS[keyof typeof ORDER_STATUS]   
