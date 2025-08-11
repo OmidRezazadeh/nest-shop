@@ -1,4 +1,5 @@
 import { Controller, UseGuards, Delete, Body, Request } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CheckVerifiedGuard } from 'src/guards/check-verfied/check-verified.guard';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { CartItemDeleteDto } from './dto/cart-item-delete.dto';
@@ -6,6 +7,8 @@ import { CartItemService } from './cart-item.service';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/redis/redis-keys-constants';
 
+@ApiTags('cart-item')
+@ApiBearerAuth()
 @Controller('cart-item')
 export class CartItemController {
 
@@ -15,8 +18,19 @@ export class CartItemController {
     ){
 
     }
-    @UseGuards(JwtAuthGuard, CheckVerifiedGuard) 
-    @Delete('delete') 
+    @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
+    @Delete('delete')
+    @ApiOperation({ summary: 'Delete one or more cart items for current user' })
+    @ApiBody({ type: CartItemDeleteDto })
+    @ApiOkResponse({
+      description: 'Items deleted successfully',
+      schema: {
+        type: 'object',
+        properties: {
+          message: { type: 'string', example: 'ایتم مورد نظر با موفقیت حذف شد' },
+        },
+      },
+    })
     async delete(@Body() cartItemDeleteDto: CartItemDeleteDto, @Request() request) {
       
       // Extract the logged-in user's ID from the request

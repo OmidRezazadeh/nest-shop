@@ -1,4 +1,6 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CartItemDeleteDto{
-cart_item_ids?: number[];
+  @ApiPropertyOptional({ type: [Number], description: 'IDs of cart items to delete' })
+  cart_item_ids?: number[];
 }
