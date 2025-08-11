@@ -9,11 +9,13 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { ListProductDto } from './dto/list-product.dto';
 import { EditProductDto } from './dto/edit-product.dto';
 import { ProductService } from './product.service';
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 
 
 
 
+@ApiTags('Products')
 @Controller('product')
 export class ProductController {
     constructor(
@@ -24,6 +26,9 @@ export class ProductController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(ROLE_NAME.Admin) 
     @Post('create')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Create a new product (admin)' })
+    @ApiBody({ type: CreateProductDto })
     async create(@Body() createProductDto:CreateProductDto){
         const product =  await this.productService.create(createProductDto)
         const productCacheKey = RedisKeys.PRODUCTS_ALL;
@@ -55,6 +60,8 @@ export class ProductController {
   }
 
   @Get('/list/:id')
+  @ApiOperation({ summary: 'Get product by id' })
+  @ApiParam({ name: 'id', type: Number })
   async getProduct(
     @Param('id') id: number
   ){
@@ -68,6 +75,9 @@ export class ProductController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE_NAME.Admin) 
   @Put('/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Edit product (admin)' })
+  @ApiParam({ name: 'id', type: Number })
   async edit(@Body() editProductDto:EditProductDto,
   @Param('id') id: number){
    await this.productService.update(id, editProductDto);
