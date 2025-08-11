@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { ROLE_NAME } from 'src/common/constants/role-name';
@@ -29,6 +30,8 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { WalletStatus } from 'src/common/constants/wallet-status';
 import { WalletType } from 'src/common/constants/wallet-type';
 
+@ApiTags('Orders')
+@ApiBearerAuth()
 @Controller('order')
 export class OrderController {
   constructor(
@@ -40,10 +43,10 @@ export class OrderController {
     private readonly transactionService:TransactionService
   ) {}
 
-@UseGuards(JwtAuthGuard)
-@Get('user-purchase')
-
- async purchase(@Request() request, @Query() listOrderDto: ListOrderDto){
+  @UseGuards(JwtAuthGuard)
+  @Get('user-purchase')
+  @ApiOperation({ summary: 'Get the current user purchases' })
+  async purchase(@Request() request, @Query() listOrderDto: ListOrderDto){
     const  userId = request.user.id;
     return await this.orderService.getPurchaseByUserId(userId,listOrderDto)
  }
@@ -51,6 +54,9 @@ export class OrderController {
  
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard)
   @Post('/:id/pay')
+  @ApiOperation({ summary: 'Pay an order by id' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ type: payOrderDto })
   async pay(
     @Request() request,
     @Param('id') orderId: number,
@@ -110,6 +116,7 @@ export class OrderController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
+  @ApiOperation({ summary: 'Create an order for current user' })
   async create(@Request() request) {
     // Extract user ID from the authenticated request
     const userId = request.user.id;
@@ -121,6 +128,7 @@ export class OrderController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE_NAME.Admin)
   @Get('list')
+  @ApiOperation({ summary: 'List all orders (admin)' })
   async getAllOrders(@Query() listOrderDto: ListOrderDto) {
     // Call the order service to retrieve a list of all orders based on query parameters
     return await this.orderService.list(listOrderDto);
@@ -128,7 +136,9 @@ export class OrderController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async getOrderById(@Request() request, @Param('orderId') orderId: number) {
+  @ApiOperation({ summary: 'Get a specific order by id (current user)' })
+  @ApiParam({ name: 'id', type: Number })
+  async getOrderById(@Request() request, @Param('id') orderId: number) {
     // Extract user ID from the authenticated request
     const userId = request.user.id;
 
@@ -139,6 +149,9 @@ export class OrderController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE_NAME.Admin)
   @Put('update-status/:id')
+  @ApiOperation({ summary: 'Update order status (admin)' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ schema: { properties: { status: { type: 'number', example: 1 } } } })
   async updateOrderStatus(
     @Param('id') id: number,
     @Body('status') status: number,
@@ -160,6 +173,8 @@ export class OrderController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(ROLE_NAME.Admin)
   @Get('user-id/:user_id')
+  @ApiOperation({ summary: 'Get all paid orders for a user (admin)' })
+  @ApiParam({ name: 'user_id', type: Number })
   async getOrderByUserId(@Param('user_id') userId: number) {
     return await this.orderService.getOrderByUserId(userId);
   }
