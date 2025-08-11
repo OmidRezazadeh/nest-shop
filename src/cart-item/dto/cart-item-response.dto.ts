@@ -1,5 +1,13 @@
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
 import { ApiProperty } from '@nestjs/swagger';
+
+export class ProductMiniDto {
+    @ApiProperty()
+    name: string;
+
+    @ApiProperty()
+    id: number;
+}
 
 export class cartItemResponseDto{
     @ApiProperty()
@@ -13,8 +21,9 @@ export class cartItemResponseDto{
     quantity:number
     
     @Expose()
-    @ApiProperty({ type: () => Object, properties: { name: { type: 'string' }, id: { type: 'number' } } })
-    product:{ name: string, id:number};
+    @Type(() => ProductMiniDto)
+    @ApiProperty({ type: () => ProductMiniDto })
+    product: ProductMiniDto;
 
 
 } 
