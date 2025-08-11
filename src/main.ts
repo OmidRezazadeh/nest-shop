@@ -17,11 +17,12 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('project shop')
     .setDescription('the shop Api description')
+    .addBearerAuth()
     .setVersion('1.0')
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api-doc', app, documentFactory);
 
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: 'paycallback', method: RequestMethod.GET }],
