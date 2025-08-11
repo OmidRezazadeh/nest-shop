@@ -7,13 +7,28 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { CartDto } from './dto/create-cart.dto';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { CheckVerifiedGuard } from 'src/guards/check-verfied/check-verified.guard';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/redis/redis-keys-constants';
+import { CartResponseDto } from './dto/cart-response.dto';
 
+@ApiTags('cart')
+@ApiBearerAuth()
+@ApiExtraModels(CartResponseDto)
 @Controller('cart')
 export class CartController {
   constructor(
@@ -25,6 +40,19 @@ export class CartController {
   // It first checks Redis cache. If not found, it loads from the database and caches it.
   @Get()
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard) // Ensure user is authenticated and verified
+  @ApiOperation({ summary: 'Get current user cart' })
+  @ApiOkResponse({
+    description: 'Returns the current user cart if exists; otherwise null',
+    schema: {
+      type: 'object',
+      properties: {
+        cart: {
+          $ref: getSchemaPath(CartResponseDto),
+          nullable: true,
+        },
+      },
+    },
+  })
   async getCart(@Request() request) {
     const userId = request.user.id; // Extract user ID from the JWT token
 
@@ -52,6 +80,17 @@ export class CartController {
   // Create a new cart for the authenticated and verified user
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard) // Ensure the user is authenticated and verified before creating a cart
   @Post('store')
+  @ApiOperation({ summary: 'Create a cart for current user' })
+  @ApiBody({ type: CartDto })
+  @ApiCreatedResponse({
+    description: 'Cart created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        cart: { $ref: getSchemaPath(CartResponseDto) },
+      },
+    },
+  })
   async create(
     @Body() cartDto: CartDto, // Cart data sent from client (items, description, etc.)
     @Request() request, // Request object to access the current user
@@ -76,6 +115,16 @@ export class CartController {
 
   @UseGuards(JwtAuthGuard, CheckVerifiedGuard) // Ensure user is authenticated and verified before deleting the cart
   @Delete('delete')
+  @ApiOperation({ summary: 'Delete current user cart' })
+  @ApiOkResponse({
+    description: 'Cart deleted successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'سبد خرید با موفقیت حذف شد' },
+      },
+    },
+  })
   async delete(@Request() request) {
     const userId = request.user.id; // Extract user ID from the authenticated request
 
