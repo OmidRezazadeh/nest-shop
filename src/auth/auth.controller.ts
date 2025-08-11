@@ -18,9 +18,10 @@ import { SavePasswordDto } from './dto/savePasswordDto';
 import { CustomThrottlerGuard } from '../guards/throttler/custom-throttler.guard';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { Public } from 'src/common/decorators/public.decorator';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 
-
+@ApiTags('auth section')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -47,7 +48,8 @@ export class AuthController {
     const {user} = req;
   return await this.authService.loginGoogle(user)
 }
-
+  @ApiOperation({summary:"register user by email password "})
+  @ApiResponse({status:201,description:'ثبت نام کاربر با موفقیت انجام شد'})
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
