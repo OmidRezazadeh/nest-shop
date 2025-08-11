@@ -18,7 +18,7 @@ import { SavePasswordDto } from './dto/savePasswordDto';
 import { CustomThrottlerGuard } from '../guards/throttler/custom-throttler.guard';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { Public } from 'src/common/decorators/public.decorator';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 
 @ApiTags('auth section')
@@ -37,6 +37,8 @@ export class AuthController {
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google/login')
+  @ApiOperation({ summary: 'Google OAuth login redirect' })
+  @ApiResponse({ status: 302, description: 'Redirects to Google OAuth consent screen' })
   googleLogin(){
 
   }
@@ -44,6 +46,8 @@ export class AuthController {
   @Public()
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  @ApiResponse({ status: 200, description: 'Login via Google successful' })
   async googleCallback(@Req() req,) {
     const {user} = req;
   return await this.authService.loginGoogle(user)
@@ -51,6 +55,7 @@ export class AuthController {
   @ApiOperation({summary:"register user by email password "})
   @ApiResponse({status:201,description:'ثبت نام کاربر با موفقیت انجام شد'})
   @Post('register')
+  @ApiBody({ type: RegisterDto })
   async register(@Body() registerDto: RegisterDto) {
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -92,6 +97,9 @@ export class AuthController {
 
 
   @Post('confirm-email')
+  @ApiOperation({ summary: 'Confirm email via code' })
+  @ApiBody({ type: ConfirmDto })
+  @ApiResponse({ status: 200, description: 'ایمیل با موفقیت تایید شد' })
   async confirmEmail(@Body() ConfirmDto:ConfirmDto ){
         await this.confirmationCodeService.confirmEmail(ConfirmDto);
       
@@ -99,12 +107,19 @@ export class AuthController {
   }
   @Post('login')
   @UseGuards(CustomThrottlerGuard) 
+  @ApiOperation({ summary: 'Login with email and password' })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'ورود موفق' })
+  @ApiResponse({ status: 429, description: 'Too many requests' })
   async login(@Body() loginDto:LoginDto){
     return this.authService.login(loginDto)
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Logout current user' })
+  @ApiResponse({ status: 200, description: 'خروج موفق' })
   async logout(@Req() req) {
     
     await this.authService.logout(req.user.id);
@@ -116,12 +131,18 @@ export class AuthController {
 
   }
   @Post('refreshToken')
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiBody({ schema: { properties: { userId: { type: 'number', example: 1 }, refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' } }, required: ['userId', 'refreshToken'] } })
+  @ApiResponse({ status: 200, description: 'توکن بروز شد' })
   async refreshToken(@Body() body: {userId:number, refreshToken: string}){
     return this.authService.refreshToken(body.userId, body.refreshToken);
 
   }
 
   @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset code via email' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({ status: 200, description: 'ایمیل ارسال شد' })
   async forgotPassword(@Body() forgotPasswordDto:ForgotPasswordDto){
    await this.authService.validateEmail(forgotPasswordDto.email)
   
@@ -135,6 +156,9 @@ export class AuthController {
   }
 
   @Patch('save-password')
+  @ApiOperation({ summary: 'Save new password using confirmation code' })
+  @ApiBody({ type: SavePasswordDto })
+  @ApiResponse({ status: 200, description: 'رمز عبور بروز شد' })
   async savePassword(@Body() savePasswordDto:SavePasswordDto){
       await this.authService.validateSavePassword(savePasswordDto)
       await this.authService.updatePassword(savePasswordDto.email,savePasswordDto.new_password);
